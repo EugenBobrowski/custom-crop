@@ -17,6 +17,7 @@
                 "change #crop-width": "resize",
                 "change #crop-height": "resize",
                 "click .fit-in": "fit_in",
+                "click .cover": "cover",
                 "click .center": "center"
             },
             initialize: function () {
@@ -47,7 +48,8 @@
                     size: {
                         w: w,
                         h: h
-                    }});
+                    }
+                });
 
                 return this;
             },
@@ -56,7 +58,7 @@
 
                 if (typeof opt.size == 'object') {
                     var w = $preview.width();
-                    $preview.height(w/opt.size.w * opt.size.h);
+                    $preview.height(w / opt.size.w * opt.size.h);
                 } else {
                     opt.size = {
                         w: $area.data('w'),
@@ -66,14 +68,14 @@
 
                 if ('object' == typeof opt.position) {
                     $preview.find('img')
-                        .css('top', opt.position.top/opt.size.h * $preview.height())
-                        .css('left', opt.position.left/opt.size.w * $preview.width());
+                        .css('top', opt.position.top / opt.size.h * $preview.height())
+                        .css('left', opt.position.left / opt.size.w * $preview.width());
                     return this;
                 }
 
                 $preview.find('img')
-                    .width($img.outerWidth()/opt.size.w*100 + '%')
-                    .height($img.outerHeight()/opt.size.h*100 + '%');
+                    .width($img.outerWidth() / opt.size.w * 100 + '%')
+                    .height($img.outerHeight() / opt.size.h * 100 + '%');
 
 
                 return this;
@@ -112,7 +114,10 @@
 
                 this.preview()
             },
-            fit_in: function () {
+            fit_in: function (e, cover) {
+
+                if (cover == undefined) cover = false;
+
                 var area = {
                         w: $area.width(),
                         h: $area.height()
@@ -126,19 +131,33 @@
                 area.ratio = area.w / area.h;
                 img.ratio = img.w / img.h;
 
-                if (img.ratio > area.ratio) {
+                var horizontal = (img.ratio > area.ratio);
+
+                horizontal = (cover) ? !horizontal : horizontal;
+
+                var is_small = (horizontal) ? (img.w < area.w) : (img.h < area.h);
+
+                if (is_small) {
+                    alert('The original image to small');
+                    return this;
+                }
+
+                if (horizontal) {
                     //horizontal
-                    if (img.w <= area.w) return this;
                     zoom = area.w / img.w;
                 } else {
                     //vertical
-                    if (img.h <= area.h) return this;
                     zoom = area.h / img.h;
                 }
 
-                this.slide(false, {value: zoom*100});
+                this.slide(false, {value: zoom * 100});
+
+                this.center();
 
                 return this;
+            },
+            cover: function (e) {
+                this.fit_in(e, true);
             },
             center: function () {
                 var pos = {
@@ -151,7 +170,7 @@
                     position: pos
                 });
             },
-            done: function (_) {
+            done: function (e) {
                 console.log('view.done');
 
                 modal.close();

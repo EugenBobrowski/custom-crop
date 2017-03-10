@@ -36,14 +36,14 @@ class Custom_Crop
     {
         wp_enqueue_media();
 
-        wp_enqueue_script('custom-crop', plugin_dir_url(__FILE__) . 'custom-crop.js', array(
+        wp_enqueue_script('custom-crop', plugin_dir_url(__FILE__) . 'js/custom-crop.js', array(
             'jquery',
             'jquery-ui-slider',
             'jquery-ui-draggable', ), CUSTOM_CROP_VERSION);
 
 
-        wp_enqueue_style('jquery-ui', plugin_dir_url(__FILE__) . 'jquery-ui.css');
-        wp_enqueue_style('custom-crop', plugin_dir_url(__FILE__) . 'style.css', array(), CUSTOM_CROP_VERSION);
+        wp_enqueue_style('jquery-ui', plugin_dir_url(__FILE__) . 'css/jquery-ui.css');
+        wp_enqueue_style('custom-crop', plugin_dir_url(__FILE__) . 'css/style.css', array(), CUSTOM_CROP_VERSION);
     }
 
     public function add_featured_image_display_settings($content, $post_id, $attachment_id = false)
@@ -51,7 +51,7 @@ class Custom_Crop
 
         if (empty($attachment_id)) return $content;
 
-        $ratio = apply_filters('custom_crop_ratio', array(400, 300));
+        $ratio = apply_filters('custom_crop_ratio', array(250, 200));
 
         ob_start();
 
@@ -97,6 +97,9 @@ class Custom_Crop
                                 </div>
 
                                 <fieldset class="imgedit-crop-ratio">
+
+                                    <?php ?>
+
                                     <legend>R - Ratio:</legend>
                                     <div class="nowrap">
                                         <label><span class="screen-reader-text">crop ratio width</span>
@@ -121,6 +124,11 @@ class Custom_Crop
                                         class="button image-actions fit-in">
                                     <span class="dashicons dashicons-editor-contract"></span>
                                     Fit in
+                                </button>
+                                <button type="button"
+                                        class="button image-actions cover">
+                                    <span class="dashicons dashicons-editor-expand"></span>
+                                    Cover
                                 </button>
                             </div>
                         </div>
