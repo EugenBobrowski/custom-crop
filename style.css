@@ -1,0 +1,108 @@
+.custom-crop-modal .crop-area {
+  position: absolute;
+  top: 0;
+  bottom: 100px;
+  left: 0;
+  right: 300px;
+  padding: 200px 100px;
+  overflow: hidden;
+}
+.custom-crop-modal .crop-area .cropped-img {
+  box-sizing: border-box;
+  position: relative;
+}
+.custom-crop-modal .crop-area .cropped-img.responsive img {
+  height: 100%;
+  width: 100%;
+}
+.custom-crop-modal .crop-area .cropped-img:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border: 1px dashed rgba(0, 0, 0, 0.25);
+}
+.custom-crop-modal .crop-area .margin {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.2);
+}
+.custom-crop-modal .crop-area .margin.top,
+.custom-crop-modal .crop-area .margin.bottom {
+  width: 100%;
+  height: 200px;
+  left: 0;
+}
+.custom-crop-modal .crop-area .margin.top {
+  top: 0;
+}
+.custom-crop-modal .crop-area .margin.bottom {
+  bottom: 0;
+}
+.custom-crop-modal .crop-area .margin.left,
+.custom-crop-modal .crop-area .margin.right {
+  top: 200px;
+  bottom: 200px;
+  width: 100px;
+}
+.custom-crop-modal .crop-area .margin.left {
+  left: 0;
+}
+.custom-crop-modal .crop-area .margin.right {
+  right: 0;
+}
+.custom-crop-modal .slider-area {
+  position: absolute;
+  height: 100px;
+  bottom: 0;
+  left: 0;
+  right: 300px;
+  padding: 44px 30px;
+  box-sizing: border-box;
+  border-top: 1px solid #ddd;
+}
+.custom-crop-modal .slider-area .ui-slider-horizontal {
+  height: 4px;
+}
+.custom-crop-modal .slider-area .ui-slider .ui-slider-handle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+.custom-crop-modal .slider-area .ui-slider-horizontal .ui-slider-handle {
+  top: -8px;
+  margin-left: -8px;
+}
+.custom-crop-modal .slider-area .ui-state-active,
+.custom-crop-modal .slider-area .ui-widget-content .ui-state-active,
+.custom-crop-modal .slider-area .ui-widget-header .ui-state-active,
+.custom-crop-modal .slider-area a.ui-button:active,
+.custom-crop-modal .slider-area .ui-button:active,
+.custom-crop-modal .slider-area .ui-button.ui-state-active:hover {
+  background: #008ec2;
+  border-color: #006799;
+}
+.custom-crop-modal .image-actions .dashicons {
+  vertical-align: middle;
+  margin-top: -4px;
+}
+.custom-crop-modal .preview {
+  float: none;
+  overflow: hidden;
+  background: #ffffff;
+  position: relative;
+}
+.custom-crop-modal .preview:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: transparent;
+}
+.custom-crop-modal .preview img {
+  position: relative;
+}

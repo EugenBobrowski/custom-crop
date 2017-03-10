@@ -1,0 +1,120 @@
+.custom-crop-modal {
+    .crop-area {
+        @default-x: 100px;
+        @default-y: 200px;
+        position: absolute;
+        top: 0;
+        bottom: 100px;
+        left: 0;
+        right: 300px;
+        padding: @default-y @default-x;
+        overflow: hidden;
+        .cropped-img {
+            box-sizing: border-box;
+            position: relative;
+            &.responsive {
+                img {
+                    height: 100%;
+                    width: 100%;
+                }
+            }
+            &:after {
+                content: '';
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left:0;
+                right: 0;
+                border: 1px dashed fade(#000000, 25%);
+            }
+        }
+        .margin {
+            position: absolute;
+            background: fade(#000000, 20%);
+
+            &.top, &.bottom {
+                width: 100%;
+                height: @default-y;
+                left: 0;
+            }
+            &.top {
+                top: 0;
+            }
+            &.bottom {
+                bottom: 0;
+            }
+            &.left, &.right {
+                top: @default-y;
+                bottom: @default-y;
+                width:@default-x;
+            }
+            &.left {
+                left: 0;
+
+            }
+            &.right {
+                right: 0;
+            }
+        }
+    }
+    .slider-area {
+        position: absolute;
+        height: 100px;
+        bottom: 0;
+        left: 0;
+        right: 300px;
+        //background: #f3f3f3;
+        padding: 44px 30px;
+        box-sizing: border-box;
+        border-top: 1px solid #ddd;
+        .ui-slider-horizontal {
+            height: 4px;
+        }
+        .ui-slider .ui-slider-handle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        .ui-slider-horizontal .ui-slider-handle {
+            top: -8px;
+            margin-left: -8px;
+        }
+        .ui-state-active,
+        .ui-widget-content .ui-state-active,
+        .ui-widget-header .ui-state-active,
+        a.ui-button:active,
+        .ui-button:active,
+        .ui-button.ui-state-active:hover {
+            background: #008ec2;
+            border-color: #006799;
+        }
+    }
+
+    .image-actions {
+        .dashicons {
+            vertical-align: middle;
+            margin-top: -4px;
+        }
+    }
+    .preview {
+        float: none;
+        overflow: hidden;
+        background: #ffffff;
+        position: relative;
+        &:after {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: transparent;
+        }
+        img {
+            position: relative;
+        }
+    }
+
+
+}
