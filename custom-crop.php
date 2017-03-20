@@ -22,6 +22,8 @@ class Custom_Crop
         add_action('load-post.php', array($this, 'init'));
         add_action('load-post-new.php', array($this, 'init'));
         add_filter('admin_post_thumbnail_html', array($this, 'add_featured_image_display_settings'), 10, 3);
+        add_action('after_setup_theme', array($this, 'add_image_size'));
+        add_action('wp_ajax_custom_crop', array($this, 'ajax_done'));
     }
 
     public function init()
@@ -40,6 +42,12 @@ class Custom_Crop
             'jquery',
             'jquery-ui-slider',
             'jquery-ui-draggable', ), CUSTOM_CROP_VERSION);
+        wp_localize_script('custom-crop', 'custom_crop_ajax', array(
+            'url' => admin_url('admin-ajax.php'),
+            '_wpnonce' => wp_create_nonce('custom_crop'),
+            'action' => 'custom_crop'
+
+        ));
 
 
         wp_enqueue_style('jquery-ui', plugin_dir_url(__FILE__) . 'css/jquery-ui.css');
@@ -64,8 +72,9 @@ class Custom_Crop
                 <div class="media-frame-content">
                     <div class="attachments-browser">
                         <div class="crop-area">
-                            <div class="cropped-img">
-                                <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>" alt="" class="">
+                            <div class="cropped-img" data-attachment-id="<?php echo $attachment_id; ?>">
+                                <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>"
+                                     alt="" class="" />
                             </div>
                             <div class="margin top"></div>
                             <div class="margin bottom"></div>
@@ -79,8 +88,9 @@ class Custom_Crop
                             <div class="attachment-details">
                                 <h2><?php _e('Preview'); ?></h2>
 
-                                <div class="preview">
-                                    <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>" alt="" class="">
+                                <div class="preview" data-left="0" data-top="0">
+                                    <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>"
+                                         alt="" class="">
                                 </div>
                             </div>
                             <div class="imgedit-group">
@@ -156,9 +166,68 @@ class Custom_Crop
 
     public static function inline_views()
     {
+        wp_get_attachment_image_src();
+        wp_generate_attachment_metadata()
         ?>
 
         <?php
+    }
+
+    public function add_image_size()
+    {
+        add_image_size('custom-crop', 300, 200, true);
+    }
+
+    public function ajax_done () {
+        check_admin_referer('custom_crop');
+        var_dump($_POST);
+
+        $attachment_id = absint($_POST['attachment_id']);
+        $width = absint($_POST['area_size'][0]);
+        $height = absint($_POST['area_size'][1]);
+
+        $img_width = absint($_POST['img_size'][0]);
+        $img_height = absint($_POST['img_size'][1]);
+
+        $x = 0; $y = 0;
+
+        if (isset($_POST['position'])) {
+            $x = intval($_POST['position'][0]);
+            $y = intval($_POST['position'][1]);
+        }
+
+        $this->crop($attachment_id, $width, $height, $img_width, $img_height, $x, $y);
+
+        exit();
+    }
+    public function crop($id, $width, $height, $img_width, $img_height, $x, $y) {
+        $meta = wp_get_attachment_metadata($id);
+        var_dump($meta);
+        $upload_dir = wp_upload_dir();
+        $path_parts = pathinfo($meta['file']);
+
+        //Create images resources
+        $origin_image = imagecreatefromstring(file_get_contents($upload_dir['basedir'] . '/' . $meta['file']));
+
+        //Create resulting image
+        $cropped_result = imagecreatetruecolor($width, $height);
+        imagesavealpha($cropped_result, true);
+        $color = imagecolorallocatealpha($cropped_result, 255, 255, 255, 0);
+        imagefill($cropped_result, 0, 0, $color);
+
+        $origin_width = imagesx($origin_image);
+        $origin_height = imagesy($origin_image);
+
+        imagecopyresampled($cropped_result, $origin_image, $x, $y, 0, 0, $img_width, $img_height, $origin_width, $origin_height);
+
+        imagepng($cropped_result, $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $path_parts['filename'] . '-' . 'custom-crop' . '.png');
+        echo $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $path_parts['filename'] . '-' . 'custom-crop' . '.png';
+
+//            $meta['sizes']['srp-table'] = $new_size;
+//$suffix = $image_editor->get_suffix();
+//            update_post_meta($id, '_wp_attachment_metadata', $meta);
+
+
     }
 
     public static function get_instance()

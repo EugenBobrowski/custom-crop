@@ -24,7 +24,6 @@
                 this.listenTo(this.model, "change", this.render);
             },
             resize: function (e) {
-                // console.log(e);
                 var w = $body.find(".custom-crop-modal").find('#crop-width').val(),
                     h = $body.find(".custom-crop-modal").find('#crop-height').val(),
                     margin = {
@@ -70,6 +69,7 @@
                     $preview.find('img')
                         .css('top', opt.position.top / opt.size.h * $preview.height())
                         .css('left', opt.position.left / opt.size.w * $preview.width());
+                    $img.data('top', opt.position.top).data('left', opt.position.left);
                     return this;
                 }
 
@@ -105,7 +105,6 @@
                 this.zoom(ui.value / 100)
             },
             drag: function (e, ui) {
-                console.log(ui);
                 this.preview(ui);
             },
             zoom: function (zoom) {
@@ -169,11 +168,23 @@
                 this.preview({
                     position: pos
                 });
+                console.log(pos);
             },
             done: function (e) {
-                console.log('view.done');
 
-                modal.close();
+                $.post(custom_crop_ajax.url, {
+                    action: custom_crop_ajax.action,
+                    _wpnonce: custom_crop_ajax._wpnonce,
+                    attachment_id: $img.data('attachment-id'),
+                    area_size: [$area.width(), $area.height()],
+                    img_size: [$img.width(), $img.height()],
+                    position: [$img.data('left'), $img.data('top')]
+
+                }, function (response) {
+                    console.log(response, custom_crop_ajax, $img.data('attachment-id'));
+                });
+
+                // modal.close();
                 return this;
             }
         };
@@ -192,7 +203,9 @@
                         // $body.find( ".custom-crop-modal" ).find( ".slider" ).slider();
 
 
-                        $window.resize(cropViewObject.resize);
+                        $window.resize(function(e){
+                            cropViewObject.resize(e);
+                        });
                     }
                     else if (e == 'open') {
                         $modal = $body.find(".custom-crop-modal");
