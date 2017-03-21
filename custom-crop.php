@@ -14,6 +14,7 @@ class Custom_Crop
 {
 
     protected static $instance;
+    public $sizes;
 
     private function __construct()
     {
@@ -24,6 +25,7 @@ class Custom_Crop
         add_filter('admin_post_thumbnail_html', array($this, 'add_featured_image_display_settings'), 10, 3);
         add_action('after_setup_theme', array($this, 'add_image_size'));
         add_action('wp_ajax_custom_crop', array($this, 'ajax_done'));
+        add_filter('wp_generate_attachment_metadata', array($this, 'save_cropped_sizes'), 10, 2);
     }
 
     public function init()
@@ -41,7 +43,7 @@ class Custom_Crop
         wp_enqueue_script('custom-crop', plugin_dir_url(__FILE__) . 'js/custom-crop.js', array(
             'jquery',
             'jquery-ui-slider',
-            'jquery-ui-draggable', ), CUSTOM_CROP_VERSION);
+            'jquery-ui-draggable',), CUSTOM_CROP_VERSION);
         wp_localize_script('custom-crop', 'custom_crop_ajax', array(
             'url' => admin_url('admin-ajax.php'),
             '_wpnonce' => wp_create_nonce('custom_crop'),
@@ -59,7 +61,10 @@ class Custom_Crop
 
         if (empty($attachment_id)) return $content;
 
-        $ratio = apply_filters('custom_crop_ratio', array(250, 200));
+        $this->get_sizes();
+        $default = reset($this->sizes);
+
+        $metadata = wp_get_attachment_metadata($attachment_id);
 
         ob_start();
 
@@ -72,9 +77,9 @@ class Custom_Crop
                 <div class="media-frame-content">
                     <div class="attachments-browser">
                         <div class="crop-area">
-                            <div class="cropped-img" data-attachment-id="<?php echo $attachment_id; ?>">
+                            <div class="cropped-img" data-attachment-id="<?php echo $attachment_id; ?>" >
                                 <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>"
-                                     alt="" class="" />
+                                     alt="" class=""/>
                             </div>
                             <div class="margin top"></div>
                             <div class="margin bottom"></div>
@@ -88,7 +93,7 @@ class Custom_Crop
                             <div class="attachment-details">
                                 <h2><?php _e('Preview'); ?></h2>
 
-                                <div class="preview" data-left="0" data-top="0">
+                                <div class="preview" data-left="0" data-top="0" >
                                     <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>"
                                          alt="" class="">
                                 </div>
@@ -96,30 +101,58 @@ class Custom_Crop
                             <div class="imgedit-group">
                                 <div class="imgedit-group-top">
                                     <h2>Image Size</h2>
-                                    <button type="button" class="dashicons dashicons-editor-help imgedit-help-toggle" onclick="imageEdit.toggleHelp(this);return false;" aria-expanded="false"><span class="screen-reader-text">Image Crop Help</span></button>
+                                    <button type="button" class="dashicons dashicons-editor-help imgedit-help-toggle"
+                                            onclick="imageEdit.toggleHelp(this);return false;" aria-expanded="false">
+                                        <span class="screen-reader-text">Image Crop Help</span></button>
 
                                     <div class="imgedit-help">
                                         <p>To crop the image, click on it and drag to make your selection.</p>
 
                                         <p><strong>Crop Aspect Ratio</strong><br>
-                                            The aspect ratio is the relationship between the width and height. You can preserve the aspect ratio by holding down the shift key while resizing your selection. Use the input box to specify the aspect ratio, e.g. 1:1 (square), 4:3, 16:9, etc.</p>
+                                            The aspect ratio is the relationship between the width and height. You can
+                                            preserve the aspect ratio by holding down the shift key while resizing your
+                                            selection. Use the input box to specify the aspect ratio, e.g. 1:1 (square),
+                                            4:3, 16:9, etc.</p>
                                     </div>
                                 </div>
 
                                 <fieldset class="imgedit-crop-ratio">
 
-                                    <?php ?>
+                                    <legend>Sizes:</legend>
+                                    <div class="nowrap">
+                                        <select id="sizes">
+                                            <?php
+                                            foreach ($this->sizes as $size => $size_opts) {
+                                                ?>
+                                                <option value="<?php echo $size; ?>"
+                                                        data-width="<?php echo $size_opts[1]; ?>"
+                                                        data-height="<?php echo $size_opts[2]; ?>"
+                                                        <?php
+                                                        if (isset($metadata['sizes'][$size])) {
+                                                            foreach ($metadata['sizes'][$size] as $param=>$param_val) {
+                                                                echo ' data-saved-' . $param . '="' . $param_val . '" ';
+                                                            }
+                                                        }
+                                                        ?>
+                                                ><?php echo $size_opts[0]; ?></option>
+                                                <?php
+                                            }
 
+                                            ?>
+                                        </select>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="imgedit-crop-ratio">
                                     <legend>R - Ratio:</legend>
                                     <div class="nowrap">
                                         <label><span class="screen-reader-text">crop ratio width</span>
                                             <input type="text" id="crop-width"
                                                    onchange=""
-                                                   value="<?php echo $ratio[0]; ?>" />
+                                                   value="<?php echo $default[1]; ?>"/>
                                         </label>
                                         <span class="imgedit-separator">:</span>
                                         <label><span class="screen-reader-text">crop ratio height</span>
-                                            <input type="text" id="crop-height" value="<?php echo $ratio[1]; ?>" />
+                                            <input type="text" id="crop-height" value="<?php echo $default[2];; ?>"/>
                                         </label>
                                     </div>
                                 </fieldset>
@@ -127,7 +160,8 @@ class Custom_Crop
                             </div>
                             <div class="imgedit-group">
                                 <button type="button"
-                                        class="button image-actions center"><span class="dashicons dashicons-move"></span>
+                                        class="button image-actions center"><span
+                                        class="dashicons dashicons-move"></span>
                                     Center
                                 </button>
                                 <button type="button"
@@ -173,41 +207,89 @@ class Custom_Crop
         <?php
     }
 
+    public function get_sizes()
+    {
+
+        if (empty($this->sizes))
+            $this->sizes = apply_filters('custom_crop_sizes', array(
+                'custom-crop' => array(__('Custom Crop'), 300, 200),
+                'custom-crop4:3' => array(__('Custom Crop 4:3'), 400, 300),
+            ));
+
+        return $this->sizes;
+    }
+
     public function add_image_size()
     {
-        add_image_size('custom-crop', 300, 200, true);
+
     }
 
-    public function ajax_done () {
+    public function ajax_done()
+    {
         check_admin_referer('custom_crop');
-        var_dump($_POST);
 
         $attachment_id = absint($_POST['attachment_id']);
-        $width = absint($_POST['area_size'][0]);
-        $height = absint($_POST['area_size'][1]);
 
-        $img_width = absint($_POST['img_size'][0]);
-        $img_height = absint($_POST['img_size'][1]);
+        $size_meta = array(
+            'mime-type' => 'image/jpeg',
+        );
+        $size = sanitize_key($_POST['size']);
 
-        $x = 0; $y = 0;
+        $size_meta['width'] = absint($_POST['area_size'][0]);
+        $size_meta['height'] = absint($_POST['area_size'][1]);
+
+        $size_meta['img_width'] = absint($_POST['img_size'][0]);
+        $size_meta['img_height'] = absint($_POST['img_size'][1]);
+
+        $size_meta['x'] = 0;
+        $size_meta['y'] = 0;
 
         if (isset($_POST['position'])) {
-            $x = intval($_POST['position'][0]);
-            $y = intval($_POST['position'][1]);
+            $size_meta['x'] = intval($_POST['position'][0]);
+            $size_meta['y'] = intval($_POST['position'][1]);
         }
 
-        $this->crop($attachment_id, $width, $height, $img_width, $img_height, $x, $y);
-
-        exit();
-    }
-    public function crop($id, $width, $height, $img_width, $img_height, $x, $y) {
-        $meta = wp_get_attachment_metadata($id);
+        $meta = wp_get_attachment_metadata($attachment_id);
         var_dump($meta);
         $upload_dir = wp_upload_dir();
         $path_parts = pathinfo($meta['file']);
 
+        $origin_path = $upload_dir['basedir'] . '/' . $meta['file'];
+        $size_meta['file'] = $path_parts['filename'] . '-' . $size . '.jpg';
+        $dst_path = $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
+
+        if (imagejpeg($this->crop($origin_path, $size_meta['width'], $size_meta['height'], $size_meta['img_width'], $size_meta['img_height'], $size_meta['x'], $size_meta['y']), $dst_path, 90))
+            $meta['sizes'][$size] = $size_meta;
+
+        wp_update_attachment_metadata($attachment_id, $meta);
+
+        exit();
+    }
+
+    public function save_cropped_sizes($metadata, $attachment_id)
+    {
+
+        if (!isset($metadata['image_meta'])) return $metadata;
+
+        $oldmeta = wp_get_attachment_metadata($attachment_id);
+
+        if (empty($oldmeta)) return $metadata;
+
+        $this->get_sizes();
+
+        foreach ($this->sizes as $size => $size_opts) {
+            if (isset($oldmeta['sizes'][$size])) $metadata['sizes'][$size] = $oldmeta['sizes'][$size];
+        }
+
+        return $metadata;
+    }
+
+    public function crop($path, $width, $height, $img_width, $img_height, $x, $y)
+    {
+
+
         //Create images resources
-        $origin_image = imagecreatefromstring(file_get_contents($upload_dir['basedir'] . '/' . $meta['file']));
+        $origin_image = imagecreatefromstring(file_get_contents($path));
 
         //Create resulting image
         $cropped_result = imagecreatetruecolor($width, $height);
@@ -220,13 +302,7 @@ class Custom_Crop
 
         imagecopyresampled($cropped_result, $origin_image, $x, $y, 0, 0, $img_width, $img_height, $origin_width, $origin_height);
 
-        imagepng($cropped_result, $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $path_parts['filename'] . '-' . 'custom-crop' . '.png');
-        echo $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $path_parts['filename'] . '-' . 'custom-crop' . '.png';
-
-//            $meta['sizes']['srp-table'] = $new_size;
-//$suffix = $image_editor->get_suffix();
-//            update_post_meta($id, '_wp_attachment_metadata', $meta);
-
+        return $cropped_result;
 
     }
 

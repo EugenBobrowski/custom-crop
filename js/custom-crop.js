@@ -14,6 +14,7 @@
                 "click .button.done": "done",
                 "slide .slider": "slide",
                 "drag .cropped-img": "drag",
+                "change #sizes": "select_size",
                 "change #crop-width": "resize",
                 "change #crop-height": "resize",
                 "click .fit-in": "fit_in",
@@ -23,7 +24,14 @@
             initialize: function () {
                 this.listenTo(this.model, "change", this.render);
             },
+            select_size: function (e) {
+                var size = this.$('#sizes').find('option:selected').data();
+                $modal.find('#crop-width').val(size.width);
+                $modal.find('#crop-height').val(size.height);
+                this.resize();
+            },
             resize: function (e) {
+
                 var w = $body.find(".custom-crop-modal").find('#crop-width').val(),
                     h = $body.find(".custom-crop-modal").find('#crop-height').val(),
                     margin = {
@@ -176,6 +184,7 @@
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
                     attachment_id: $img.data('attachment-id'),
+                    size: this.$('#sizes').val(),
                     area_size: [$area.width(), $area.height()],
                     img_size: [$img.width(), $img.height()],
                     position: [$img.data('left'), $img.data('top')]
