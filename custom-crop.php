@@ -192,6 +192,24 @@ class Custom_Crop
         </script>
         <a href="#" id="modify_thumbnail"> <?php _e('Modify thumbnail'); ?></a>
 
+            <?php
+            $avalieble_files = array();
+            foreach ($this->sizes as $size => $size_opts) {
+
+                if (!isset($metadata['sizes'][$size]))  continue;
+
+                $avalieble_files[] = $size_opts[0];
+
+            }
+//            var_dump($avalieble_files);
+            ?>
+        <?php if (count($avalieble_files)) : ?>
+        <p class="desc">
+            <strong><?php _e('Custom crop sizes:'); ?></strong>
+            <?php echo implode(', ', $avalieble_files); ?>
+        </p>
+        <?php endif; ?>
+
         <?php
 
 
@@ -213,7 +231,7 @@ class Custom_Crop
         if (empty($this->sizes))
             $this->sizes = apply_filters('custom_crop_sizes', array(
                 'custom-crop' => array(__('Custom Crop'), 300, 200),
-                'custom-crop4:3' => array(__('Custom Crop 4:3'), 400, 300),
+                'custom-crop43' => array(__('Custom Crop 4:3'), 400, 300),
             ));
 
         return $this->sizes;

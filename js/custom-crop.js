@@ -24,12 +24,44 @@
             initialize: function () {
                 this.listenTo(this.model, "change", this.render);
             },
-            select_size: function (e) {
-                var size = this.$('#sizes').find('option:selected').data();
-                $modal.find('#crop-width').val(size.width);
-                $modal.find('#crop-height').val(size.height);
-                this.resize();
+            open: function () {
+
+                $img.data('h', $img.find('img').height())
+                    .data('w', $img.find('img').width())
+                    .addClass('responsive');
+
+                this.slider_init();
+                this.select_size();
             },
+            select_size: function (e) {
+                var selected = $modal.find('#sizes').find('option:selected');
+                var size = selected.data();
+
+                $modal.find('#crop-width').val((size.savedWidth !== undefined) ? size.savedWidth : size.width);
+                $modal.find('#crop-height').val((size.savedHeight !== undefined) ? size.savedHeight : size.height);
+                this.resize();
+
+                if (size.savedImg_width != undefined && size.savedImg_height != undefined ) {
+                    var zoom;
+
+                    zoom = size.savedImg_width / $img.data('w');
+
+                    this.slide(false, {value: zoom * 100});
+
+                }
+                if (size.savedX != undefined && size.savedY != undefined ) {
+                    $img.css('left', size.savedX).css('top', size.savedY);
+                    this.preview({
+                        position: {
+                            left: size.savedX,
+                            top: size.savedY
+                        }
+                    });
+                }
+
+
+            },
+
             resize: function (e) {
 
                 var w = $body.find(".custom-crop-modal").find('#crop-width').val(),
@@ -91,10 +123,6 @@
             slider_init: function () {
 
                 this.resize();
-
-                $img.data('h', $img.find('img').height())
-                    .data('w', $img.find('img').width())
-                    .addClass('responsive');
 
                 this.slide({}, {value: 100});
                 $img.draggable();
@@ -178,8 +206,7 @@
                 });
                 console.log(pos);
             },
-            done: function (e) {
-
+            save: function (e) {
                 $.post(custom_crop_ajax.url, {
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
@@ -192,8 +219,12 @@
                 }, function (response) {
                     console.log(response, custom_crop_ajax, $img.data('attachment-id'));
                 });
+            },
+            done: function (e) {
 
-                // modal.close();
+                this.save();
+
+                modal.close();
                 return this;
             }
         };
@@ -223,7 +254,7 @@
                         $preview = $modal.find('.preview');
 
                         // $body.find( ".custom-crop-modal" ).find( ".slider" ).slider();
-                        cropViewObject.slider_init();
+                        cropViewObject.open();
 
                     }
                 }
