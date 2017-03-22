@@ -12,6 +12,8 @@
 
             events: {
                 "click .button.done": "done",
+                "click .button.save": "save",
+                "click .button.cancel": "close",
                 "slide .slider": "slide",
                 "drag .cropped-img": "drag",
                 "change #sizes": "select_size",
@@ -218,15 +220,28 @@
 
                 }, function (response) {
                     console.log(response, custom_crop_ajax, $img.data('attachment-id'));
+
+                    $modal.find('#sizes').find('option:selected')
+                        .data('saved-width', $area.width())
+                        .data('saved-height', $area.height())
+                        .data('saved-x', $img.data('left'))
+                        .data('saved-y', $img.data('top'))
+                        .data('saved-img_width', $img.width())
+                        .data('saved-img_height', $img.height())
                 });
+            },
+            close: function (e) {
+
+                modal.close();
+                return this;
             },
             done: function (e) {
 
                 this.save();
-
-                modal.close();
+                this.close();
                 return this;
             }
+
         };
         // Create a modal content view.
         var ModalContentView = wp.Backbone.View.extend(cropViewObject);

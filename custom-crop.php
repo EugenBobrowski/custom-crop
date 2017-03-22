@@ -90,13 +90,30 @@ class Custom_Crop
                             <div class="slider"></div>
                         </div>
                         <div class="media-sidebar imgedit-settings">
-                            <div class="attachment-details">
+                            <div class="attachment-details imgedit-group    ">
                                 <h2><?php _e('Preview'); ?></h2>
 
                                 <div class="preview" data-left="0" data-top="0" >
                                     <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>"
                                          alt="" class="">
                                 </div>
+                            </div>
+                            <div class="imgedit-group">
+                                <button type="button"
+                                        class="button image-actions center"><span
+                                        class="dashicons dashicons-move"></span>
+                                    Center
+                                </button>
+                                <button type="button"
+                                        class="button image-actions fit-in">
+                                    <span class="dashicons dashicons-editor-contract"></span>
+                                    Fit in
+                                </button>
+                                <button type="button"
+                                        class="button image-actions cover">
+                                    <span class="dashicons dashicons-editor-expand"></span>
+                                    Cover
+                                </button>
                             </div>
                             <div class="imgedit-group">
                                 <div class="imgedit-group-top">
@@ -158,23 +175,7 @@ class Custom_Crop
                                 </fieldset>
 
                             </div>
-                            <div class="imgedit-group">
-                                <button type="button"
-                                        class="button image-actions center"><span
-                                        class="dashicons dashicons-move"></span>
-                                    Center
-                                </button>
-                                <button type="button"
-                                        class="button image-actions fit-in">
-                                    <span class="dashicons dashicons-editor-contract"></span>
-                                    Fit in
-                                </button>
-                                <button type="button"
-                                        class="button image-actions cover">
-                                    <span class="dashicons dashicons-editor-expand"></span>
-                                    Cover
-                                </button>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -182,9 +183,18 @@ class Custom_Crop
                     <div class="media-toolbar">
                         <div class="media-toolbar-secondary"></div>
                         <div class="media-toolbar-primary search-form">
+
+
                             <button type="button" id="custom_crop_done"
                                     class="button media-button button-primary button-large done">Done
                             </button>
+                            <button type="button" id="custom_crop_save"
+                                    class="button media-button button-large save">Save
+                            </button>
+                            <button type="button" id="custom_crop_cancel"
+                                    class="button media-button button-large cancel widget-control-remove">Cancel
+                            </button>
+
                         </div>
                     </div>
                 </div>
