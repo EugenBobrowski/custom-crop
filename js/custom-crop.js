@@ -26,7 +26,10 @@
             initialize: function () {
                 this.listenTo(this.model, "change", this.render);
             },
-            open: function () {
+            attach: function () {
+
+                console.log($body.find('#modify_thumbnail').data());
+
                 $img.data('h', $img.find('img').height())
                     .data('w', $img.find('img').width())
                     .addClass('responsive');
@@ -206,7 +209,8 @@
                 });
                 console.log(pos);
             },
-            save: function (e) {
+            save: function (e, close) {
+                var _this = this;
                 $.post(custom_crop_ajax.url, {
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
@@ -226,7 +230,9 @@
                         .data('saved-x', $img.data('left'))
                         .data('saved-y', $img.data('top'))
                         .data('saved-img_width', $img.width())
-                        .data('saved-img_height', $img.height())
+                        .data('saved-img_height', $img.height());
+
+                    if (close != undefined && close == true) _this.close(e);
                 });
             },
             close: function (e) {
@@ -236,8 +242,8 @@
             },
             done: function (e) {
 
-                this.save();
-                this.close();
+                this.save(e, true);
+
                 return this;
             }
 
@@ -260,15 +266,18 @@
                         $window.resize(function(e){
                             cropViewObject.resize_area(e);
                         });
-                    }
-                    else if (e == 'open') {
                         $modal = $body.find(".custom-crop-modal");
                         $img = $modal.find('.cropped-img');
                         $area = $modal.find('.crop-area');
                         $preview = $modal.find('.preview');
+                        cropViewObject.attach();
+                    }
+                    else if (e == 'open') {
+
+
 
                         // $body.find( ".custom-crop-modal" ).find( ".slider" ).slider();
-                        cropViewObject.open();
+
 
                     }
                 }
@@ -281,7 +290,10 @@
             event.preventDefault();
             // Assign the ModalContentView to the modal as the `content` subview.
             // Proxies to View.views.set( '.media-modal-content', content );
-            modal.content(new ModalContentView());
+            // modal.content(new ModalContentView());
+            if ($modal == undefined)
+                modal.content(new ModalContentView());
+
             // Out of the box, the modal is closed, so we need to open() it.
             modal.open();
         });

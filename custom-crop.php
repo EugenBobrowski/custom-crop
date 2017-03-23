@@ -71,7 +71,7 @@ class Custom_Crop
 
         ?>
         <script type="text/template" id="tmpl-modal-content" class="hide-menu">
-            <div class="image-editor media-frame hide-menu hide-router custom-crop-modal">
+            <div class="image-editor media-frame hide-menu hide-router">
                 <div class="media-frame-title">
                     <h1><?php _e('Modify thumbnail'); ?></h1>
                 </div>
@@ -203,7 +203,10 @@ class Custom_Crop
                 </div>
             </div>
         </script>
-        <a href="#" id="modify_thumbnail"> <?php _e('Modify thumbnail'); ?></a>
+        <a href="#"
+           id="modify_thumbnail"
+           data-metadata="<?php echo esc_attr(json_encode($metadata)); ?>"
+        > <?php _e('Modify thumbnail'); ?></a>
 
             <?php
             $avalieble_files = array();
