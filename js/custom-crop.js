@@ -27,9 +27,6 @@
                 this.listenTo(this.model, "change", this.render);
             },
             attach: function () {
-
-                console.log($body.find('#modify_thumbnail').data());
-
                 $img.data('h', $img.find('img').height())
                     .data('w', $img.find('img').width())
                     .addClass('responsive');
