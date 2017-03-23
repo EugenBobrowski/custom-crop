@@ -27,7 +27,7 @@
                 this.listenTo(this.model, "change", this.render);
             },
             open: function () {
-
+                // setTimeout();
                 $img.data('h', $img.find('img').height())
                     .data('w', $img.find('img').width())
                     .addClass('responsive');

@@ -65,6 +65,7 @@ class Custom_Crop
         $default = reset($this->sizes);
 
         $metadata = wp_get_attachment_metadata($attachment_id);
+        $src = wp_get_attachment_image_src($attachment_id, 'full');
 
         ob_start();
 
@@ -78,7 +79,9 @@ class Custom_Crop
                     <div class="attachments-browser">
                         <div class="crop-area">
                             <div class="cropped-img" data-attachment-id="<?php echo $attachment_id; ?>" >
-                                <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>"
+                                <img src="<?php echo $src[0]; ?>"
+                                     width="<?php echo $src[1]; ?>"
+                                     height="<?php echo $src[2]; ?>"
                                      alt="" class=""/>
                             </div>
                             <div class="margin top"></div>
@@ -94,7 +97,7 @@ class Custom_Crop
                                 <h2><?php _e('Preview'); ?></h2>
 
                                 <div class="preview" data-left="0" data-top="0" >
-                                    <img src="<?php echo wp_get_attachment_image_url($attachment_id, 'full') ?>"
+                                    <img src="<?php echo $src[0]; ?>"
                                          alt="" class="">
                                 </div>
                             </div>
