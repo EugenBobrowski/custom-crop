@@ -17,8 +17,8 @@
                 "slide .slider": "slide",
                 "drag .cropped-img": "drag",
                 "change #sizes": "select_size",
-                "change #crop-width": "resize",
-                "change #crop-height": "resize",
+                "change #crop-width": "resize_area",
+                "change #crop-height": "resize_area",
                 "click .fit-in": "fit_in",
                 "click .cover": "cover",
                 "click .center": "center"
@@ -27,7 +27,6 @@
                 this.listenTo(this.model, "change", this.render);
             },
             open: function () {
-                // setTimeout();
                 $img.data('h', $img.find('img').height())
                     .data('w', $img.find('img').width())
                     .addClass('responsive');
@@ -35,36 +34,7 @@
                 this.slider_init();
                 this.select_size();
             },
-            select_size: function (e) {
-                var selected = $modal.find('#sizes').find('option:selected');
-                var size = selected.data();
-
-                $modal.find('#crop-width').val((size.savedWidth !== undefined) ? size.savedWidth : size.width);
-                $modal.find('#crop-height').val((size.savedHeight !== undefined) ? size.savedHeight : size.height);
-                this.resize();
-
-                if (size.savedImg_width != undefined && size.savedImg_height != undefined ) {
-                    var zoom;
-
-                    zoom = size.savedImg_width / $img.data('w');
-
-                    this.slide(false, {value: zoom * 100});
-
-                }
-                if (size.savedX != undefined && size.savedY != undefined ) {
-                    $img.css('left', size.savedX).css('top', size.savedY);
-                    this.preview({
-                        position: {
-                            left: size.savedX,
-                            top: size.savedY
-                        }
-                    });
-                }
-
-
-            },
-
-            resize: function (e) {
+            resize_area: function (e) {
 
                 var w = $body.find(".custom-crop-modal").find('#crop-width').val(),
                     h = $body.find(".custom-crop-modal").find('#crop-height').val(),
@@ -93,6 +63,36 @@
                 });
 
                 return this;
+            },
+            select_size: function (e) {
+                var selected = $modal.find('#sizes').find('option:selected');
+                var size = selected.data();
+
+                console.log(size);
+
+                $modal.find('#crop-width').val((size.savedWidth !== undefined) ? size.savedWidth : size.width);
+                $modal.find('#crop-height').val((size.savedHeight !== undefined) ? size.savedHeight : size.height);
+                this.resize_area();
+
+                if (size.savedImg_width != undefined && size.savedImg_height != undefined ) {
+                    var zoom;
+
+                    zoom = size.savedImg_width / $img.data('w');
+
+                    this.slide(false, {value: zoom * 100});
+
+                }
+                if (size.savedX != undefined && size.savedY != undefined ) {
+                    $img.css('left', size.savedX).css('top', size.savedY);
+                    this.preview({
+                        position: {
+                            left: size.savedX,
+                            top: size.savedY
+                        }
+                    });
+                }
+
+
             },
             preview: function (opt) {
                 if (typeof opt == 'undefined') opt = {};
@@ -124,7 +124,7 @@
             },
             slider_init: function () {
 
-                this.resize();
+                this.resize_area();
 
                 this.slide({}, {value: 100});
                 $img.draggable();
@@ -134,8 +134,6 @@
                 });
 
             },
-
-
             slide: function (e, ui) {
                 if (e == false) $modal.find(".slider").slider({
                     value: ui.value
@@ -213,15 +211,16 @@
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
                     attachment_id: $img.data('attachment-id'),
-                    size: this.$('#sizes').val(),
+                    size: $modal.find('#sizes').val(),
                     area_size: [$area.width(), $area.height()],
                     img_size: [$img.width(), $img.height()],
                     position: [$img.data('left'), $img.data('top')]
 
                 }, function (response) {
-                    console.log(response, custom_crop_ajax, $img.data('attachment-id'));
-
-                    $modal.find('#sizes').find('option:selected')
+                    // console.log(response, custom_crop_ajax, $img.data('attachment-id'));
+                    var $selected = $modal.find('#sizes').find('option:selected');
+                    console.log($selected.data());
+                    $selected
                         .data('saved-width', $area.width())
                         .data('saved-height', $area.height())
                         .data('saved-x', $img.data('left'))
@@ -259,7 +258,7 @@
 
 
                         $window.resize(function(e){
-                            cropViewObject.resize(e);
+                            cropViewObject.resize_area(e);
                         });
                     }
                     else if (e == 'open') {
