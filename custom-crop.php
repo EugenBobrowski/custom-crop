@@ -67,13 +67,56 @@ class Custom_Crop
         $metadata = wp_get_attachment_metadata($attachment_id);
         $src = wp_get_attachment_image_src($attachment_id, 'full');
 
+        $upload_dir = wp_upload_dir();
+        $path_parts = pathinfo($metadata['file']);
+        $sizes_dir =  $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
+
         ob_start();
 
         ?>
         <script type="text/template" id="tmpl-modal-content" class="hide-menu">
-            <div class="image-editor media-frame hide-menu hide-router">
+            <div class="image-editor media-frame hide-menu ">
                 <div class="media-frame-title">
                     <h1><?php _e('Modify thumbnail'); ?></h1>
+                </div>
+                <div class="media-frame-router">
+                    <div class="media-router">
+                        <?php
+                        $active = 'active';
+                        $placeholder = plugin_dir_url(__FILE__) . 'css/placeholder.png';
+                        
+                        foreach ($this->sizes as $size => $size_opts) {
+                        if (isset($metadata['sizes'][$size])) {
+
+                            $prev = $sizes_dir . '/' . $metadata['sizes'][$size]['file'];
+                        } else {
+                            $prev = $placeholder;
+                        }
+
+                            ?>
+                            <a href="#" class="media-menu-item <?php echo $active; ?>"
+                               data-size="<?php echo $size; ?>"
+                               data-width="<?php echo $size_opts[1]; ?>"
+                               data-height="<?php echo $size_opts[2]; ?>"
+                                <?php
+                                if (isset($metadata['sizes'][$size])) {
+                                    foreach ($metadata['sizes'][$size] as $param=>$param_val) {
+                                        echo ' data-saved-' . $param . '="' . $param_val . '" ';
+                                    }
+                                }
+                                ?>
+                            >
+                                <span class="prev-icon">
+                                    <img src="<?php echo $prev; ?>" alt="">
+                                </span>
+
+                                <?php echo $size_opts[0]; ?></a>
+                            <?php
+                            $active = '';
+                        }
+
+                        ?>
+                        </div>
                 </div>
                 <div class="media-frame-content">
                     <div class="attachments-browser">
@@ -118,7 +161,7 @@ class Custom_Crop
                                     Cover
                                 </button>
                             </div>
-                            <div class="imgedit-group">
+                            <div class="imgedit-group" style="display: none">
                                 <div class="imgedit-group-top">
                                     <h2>Image Size</h2>
                                     <button type="button" class="dashicons dashicons-editor-help imgedit-help-toggle"
@@ -189,7 +232,7 @@ class Custom_Crop
 
 
                             <button type="button" id="custom_crop_done"
-                                    class="button media-button button-primary button-large done">Done
+                                    class="button media-button button-primary button-large done">Save & close
                             </button>
                             <button type="button" id="custom_crop_save"
                                     class="button media-button button-large save">Save
@@ -284,20 +327,24 @@ class Custom_Crop
         }
 
         $meta = wp_get_attachment_metadata($attachment_id);
-        var_dump($meta);
         $upload_dir = wp_upload_dir();
         $path_parts = pathinfo($meta['file']);
 
         $origin_path = $upload_dir['basedir'] . '/' . $meta['file'];
         $size_meta['file'] = $path_parts['filename'] . '-' . $size . '.jpg';
         $dst_path = $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
+        $dst_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
 
         if (imagejpeg($this->crop($origin_path, $size_meta['width'], $size_meta['height'], $size_meta['img_width'], $size_meta['img_height'], $size_meta['x'], $size_meta['y']), $dst_path, 90))
             $meta['sizes'][$size] = $size_meta;
 
         wp_update_attachment_metadata($attachment_id, $meta);
 
-        exit();
+        wp_send_json(array(
+            'url' => $dst_url,
+            'meta' => $meta,
+        ));
+
     }
 
     public function save_cropped_sizes($metadata, $attachment_id)

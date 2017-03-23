@@ -21,7 +21,8 @@
                 "change #crop-height": "resize_area",
                 "click .fit-in": "fit_in",
                 "click .cover": "cover",
-                "click .center": "center"
+                "click .center": "center",
+                "click .media-router>a": "change_size"
             },
             initialize: function () {
                 this.listenTo(this.model, "change", this.render);
@@ -66,6 +67,35 @@
                 });
 
                 return this;
+            },
+            change_size: function (e) {
+                var $this = $(e.target);
+                $this.parent().find('.active').removeClass('active');
+                $this.addClass('active');
+
+                var size = $this.data();
+
+                $modal.find('#crop-width').val((size.savedWidth !== undefined) ? size.savedWidth : size.width);
+                $modal.find('#crop-height').val((size.savedHeight !== undefined) ? size.savedHeight : size.height);
+                this.resize_area();
+
+                if (size.savedImg_width != undefined && size.savedImg_height != undefined ) {
+                    var zoom;
+
+                    zoom = size.savedImg_width / $img.data('w');
+
+                    this.slide(false, {value: zoom * 100});
+
+                }
+                if (size.savedX != undefined && size.savedY != undefined ) {
+                    $img.css('left', size.savedX).css('top', size.savedY);
+                    this.preview({
+                        position: {
+                            left: size.savedX,
+                            top: size.savedY
+                        }
+                    });
+                }
             },
             select_size: function (e) {
                 var selected = $modal.find('#sizes').find('option:selected');
@@ -222,7 +252,7 @@
 
                 }, function (response) {
                     // console.log(response, custom_crop_ajax, $img.data('attachment-id'));
-                    var $selected = $modal.find('#sizes').find('option:selected');
+                    var $selected = $modal.find('.media-router>a.active');
                     console.log($selected.data());
                     $selected
                         .data('saved-width', $area.width())
@@ -231,6 +261,8 @@
                         .data('saved-y', $img.data('top'))
                         .data('saved-img_width', $img.width())
                         .data('saved-img_height', $img.height());
+
+                    $selected.find('img').attr('src', response.url + '?time=' + new Date().getTime());
 
                     if (close != undefined && close == true) _this.close(e);
                 });
