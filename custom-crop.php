@@ -237,9 +237,9 @@ class Custom_Crop
                             <button type="button" id="custom_crop_save"
                                     class="button media-button button-large save">Save
                             </button>
-                            <button type="button" id="custom_crop_cancel"
-                                    class="button media-button button-large cancel widget-control-remove">Cancel
-                            </button>
+<!--                            <button type="button" id="custom_crop_cancel"-->
+<!--                                    class="button media-button button-large cancel widget-control-remove">Cancel-->
+<!--                            </button>-->
 
                         </div>
                     </div>
