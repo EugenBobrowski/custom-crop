@@ -32,6 +32,9 @@
                     .addClass('responsive');
 
                 this.slider_init();
+
+            },
+            open: function () {
                 this.select_size();
             },
             resize_area: function (e) {
@@ -271,7 +274,7 @@
                     }
                     else if (e == 'open') {
 
-
+                        cropViewObject.open();
 
                         // $body.find( ".custom-crop-modal" ).find( ".slider" ).slider();
 
