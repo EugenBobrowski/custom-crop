@@ -14,6 +14,7 @@
                 "click .button.done": "done",
                 "click .button.save": "save",
                 "click .button.cancel": "close",
+                "click .button.delete": "delete",
                 "slide .slider": "slide",
                 "drag .cropped-img": "drag",
                 "change #sizes": "select_size",
@@ -36,7 +37,7 @@
 
             },
             open: function () {
-                this.select_size();
+                this.change_size();
             },
             resize_area: function (e) {
 
@@ -69,11 +70,20 @@
                 return this;
             },
             change_size: function (e) {
-                var $this = $(e.target);
-                $this.parent().find('.active').removeClass('active');
-                $this.addClass('active');
+                var $this;
+
+                if (e !== undefined) {
+                    $this = $(e.target).closest('a');
+                    $this.parent().find('.active').removeClass('active');
+                    $this.addClass('active');
+                } else {
+                    $this = $modal.find('.media-router>a.active');
+                }
 
                 var size = $this.data();
+
+                if (size.savedWidth !== undefined) $modal.find('.button.delete').fadeIn();
+                else $modal.find('.button.delete').fadeOut();
 
                 $modal.find('#crop-width').val((size.savedWidth !== undefined) ? size.savedWidth : size.width);
                 $modal.find('#crop-height').val((size.savedHeight !== undefined) ? size.savedHeight : size.height);
@@ -239,20 +249,64 @@
                 });
                 console.log(pos);
             },
-            save: function (e, close) {
-                var _this = this;
+            delete: function (e) {
+                var $selected = $modal.find('.media-router>a.active');
                 $.post(custom_crop_ajax.url, {
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
                     attachment_id: $img.data('attachment-id'),
-                    size: $modal.find('#sizes').val(),
+                    size: $selected.data('size'),
+                    remove: true
+
+                }, function (response) {
+                    console.log(response);
+
+
+                    $selected
+                        .removeAttr('saved-width')
+                        .removeAttr('saved-height')
+                        .removeAttr('saved-x')
+                        .removeAttr('saved-y')
+                        .removeAttr('saved-img_width')
+                        .removeAttr('saved-img_height');
+
+                    console.log($selected.data());
+
+                    $selected
+                        .removeData('saved-width')
+                        .removeData('saved-height')
+                        .removeData('saved-x')
+                        .removeData('saved-y')
+                        .removeData('saved-img_width')
+                        .removeData('saved-img_height');
+
+                    console.log($selected.data());
+
+                    $selected.find('img').attr('src', custom_crop_ajax.placeholder);
+                    $modal.find('.button.delete').fadeOut();
+                    if (response.file_deleted) {
+
+                    }
+
+
+
+                });
+            },
+            save: function (e, close) {
+                var _this = this;
+                var $selected = $modal.find('.media-router>a.active');
+                $.post(custom_crop_ajax.url, {
+                    action: custom_crop_ajax.action,
+                    _wpnonce: custom_crop_ajax._wpnonce,
+                    attachment_id: $img.data('attachment-id'),
+                    size: $selected.data('size'),
                     area_size: [$area.width(), $area.height()],
                     img_size: [$img.width(), $img.height()],
                     position: [$img.data('left'), $img.data('top')]
 
                 }, function (response) {
                     // console.log(response, custom_crop_ajax, $img.data('attachment-id'));
-                    var $selected = $modal.find('.media-router>a.active');
+
                     console.log($selected.data());
                     $selected
                         .data('saved-width', $area.width())
@@ -263,6 +317,8 @@
                         .data('saved-img_height', $img.height());
 
                     $selected.find('img').attr('src', response.url + '?time=' + new Date().getTime());
+
+                    $modal.find('.button.delete').fadeIn();
 
                     if (close != undefined && close == true) _this.close(e);
                 });

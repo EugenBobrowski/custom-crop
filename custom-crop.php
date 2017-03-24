@@ -47,8 +47,8 @@ class Custom_Crop
         wp_localize_script('custom-crop', 'custom_crop_ajax', array(
             'url' => admin_url('admin-ajax.php'),
             '_wpnonce' => wp_create_nonce('custom_crop'),
-            'action' => 'custom_crop'
-
+            'action' => 'custom_crop',
+            'placeholder' => plugin_dir_url(__FILE__) . 'css/placeholder.png',
         ));
 
 
@@ -69,7 +69,7 @@ class Custom_Crop
 
         $upload_dir = wp_upload_dir();
         $path_parts = pathinfo($metadata['file']);
-        $sizes_dir_url =  $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
+        $sizes_dir_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
 
         ob_start();
 
@@ -84,14 +84,14 @@ class Custom_Crop
                         <?php
                         $active = 'active';
                         $placeholder = plugin_dir_url(__FILE__) . 'css/placeholder.png';
-                        
-                        foreach ($this->sizes as $size => $size_opts) {
-                        if (isset($metadata['sizes'][$size])) {
 
-                            $prev = $sizes_dir_url . '/' . $metadata['sizes'][$size]['file'];
-                        } else {
-                            $prev = $placeholder;
-                        }
+                        foreach ($this->sizes as $size => $size_opts) {
+                            if (isset($metadata['sizes'][$size])) {
+
+                                $prev = $sizes_dir_url . '/' . $metadata['sizes'][$size]['file'];
+                            } else {
+                                $prev = $placeholder;
+                            }
 
                             ?>
                             <a href="#" class="media-menu-item <?php echo $active; ?>"
@@ -100,7 +100,7 @@ class Custom_Crop
                                data-height="<?php echo $size_opts[2]; ?>"
                                 <?php
                                 if (isset($metadata['sizes'][$size])) {
-                                    foreach ($metadata['sizes'][$size] as $param=>$param_val) {
+                                    foreach ($metadata['sizes'][$size] as $param => $param_val) {
                                         echo ' data-saved-' . $param . '="' . $param_val . '" ';
                                     }
                                 }
@@ -116,12 +116,12 @@ class Custom_Crop
                         }
 
                         ?>
-                        </div>
+                    </div>
                 </div>
                 <div class="media-frame-content">
                     <div class="attachments-browser">
                         <div class="crop-area">
-                            <div class="cropped-img" data-attachment-id="<?php echo $attachment_id; ?>" >
+                            <div class="cropped-img" data-attachment-id="<?php echo $attachment_id; ?>">
                                 <img src="<?php echo $src[0]; ?>"
                                      width="<?php echo $src[1]; ?>"
                                      height="<?php echo $src[2]; ?>"
@@ -139,7 +139,7 @@ class Custom_Crop
                             <div class="attachment-details imgedit-group    ">
                                 <h2><?php _e('Preview'); ?></h2>
 
-                                <div class="preview" data-left="0" data-top="0" >
+                                <div class="preview" data-left="0" data-top="0">
                                     <img src="<?php echo $src[0]; ?>"
                                          alt="" class="">
                                 </div>
@@ -159,6 +159,11 @@ class Custom_Crop
                                         class="button image-actions cover">
                                     <span class="dashicons dashicons-editor-expand"></span>
                                     Cover
+                                </button>
+                                <button type="button"
+                                        class="button image-actions cover">
+                                    <span class="dashicons dashicons-search"></span>
+                                    100%
                                 </button>
                             </div>
                             <div class="imgedit-group" style="display: none">
@@ -190,13 +195,13 @@ class Custom_Crop
                                                 <option value="<?php echo $size; ?>"
                                                         data-width="<?php echo $size_opts[1]; ?>"
                                                         data-height="<?php echo $size_opts[2]; ?>"
-                                                        <?php
-                                                        if (isset($metadata['sizes'][$size])) {
-                                                            foreach ($metadata['sizes'][$size] as $param=>$param_val) {
-                                                                echo ' data-saved-' . $param . '="' . $param_val . '" ';
-                                                            }
+                                                    <?php
+                                                    if (isset($metadata['sizes'][$size])) {
+                                                        foreach ($metadata['sizes'][$size] as $param => $param_val) {
+                                                            echo ' data-saved-' . $param . '="' . $param_val . '" ';
                                                         }
-                                                        ?>
+                                                    }
+                                                    ?>
                                                 ><?php echo $size_opts[0]; ?></option>
                                                 <?php
                                             }
@@ -237,9 +242,12 @@ class Custom_Crop
                             <button type="button" id="custom_crop_save"
                                     class="button media-button button-large save">Save
                             </button>
-<!--                            <button type="button" id="custom_crop_cancel"-->
-<!--                                    class="button media-button button-large cancel widget-control-remove">Cancel-->
-<!--                            </button>-->
+                            <button type="button" id="custom_crop_delete"
+                                    class="button media-button button-large delete">Delete
+                            </button>
+                            <!--                            <button type="button" id="custom_crop_cancel"-->
+                            <!--                                    class="button media-button button-large cancel widget-control-remove">Cancel-->
+                            <!--                            </button>-->
 
                         </div>
                     </div>
@@ -251,23 +259,23 @@ class Custom_Crop
            data-metadata="<?php echo esc_attr(json_encode($metadata)); ?>"
         > <?php _e('Modify thumbnail'); ?></a>
 
-            <?php
-            $avalieble_files = array();
-            foreach ($this->sizes as $size => $size_opts) {
+        <?php
+        $avalieble_files = array();
+        foreach ($this->sizes as $size => $size_opts) {
 
-                if (!isset($metadata['sizes'][$size]))  continue;
+            if (!isset($metadata['sizes'][$size])) continue;
 
-                $avalieble_files[] = '<a href="'.$sizes_dir_url . '/' . $metadata['sizes'][$size]['file'] . '">' . $size_opts[0] . '</a>';
+            $avalieble_files[] = '<a href="' . $sizes_dir_url . '/' . $metadata['sizes'][$size]['file'] . '">' . $size_opts[0] . '</a>';
 
-            }
+        }
 //            var_dump($avalieble_files);
-            ?>
+        ?>
         <?php if (count($avalieble_files)) : ?>
         <p class="desc">
             <strong><?php _e('Custom crop sizes:'); ?></strong>
             <?php echo implode(', ', $avalieble_files); ?>
         </p>
-        <?php endif; ?>
+    <?php endif; ?>
 
         <?php
 
@@ -307,10 +315,16 @@ class Custom_Crop
 
         $attachment_id = absint($_POST['attachment_id']);
 
+        $size = sanitize_key($_POST['size']);
+
+
+        if ($_POST['remove']) {
+            return $this->ajax_remove($attachment_id, $size);
+        }
+
         $size_meta = array(
             'mime-type' => 'image/jpeg',
         );
-        $size = sanitize_key($_POST['size']);
 
         $size_meta['width'] = absint($_POST['area_size'][0]);
         $size_meta['height'] = absint($_POST['area_size'][1]);
@@ -342,6 +356,42 @@ class Custom_Crop
 
         wp_send_json(array(
             'url' => $dst_url,
+            'meta' => $meta,
+        ));
+
+    }
+
+    public function ajax_remove($attachment_id, $size)
+    {
+        $response = array();
+        $meta = wp_get_attachment_metadata($attachment_id);
+        $upload_dir = wp_upload_dir();
+        $path_parts = pathinfo($meta['file']);
+
+        if (!isset($meta['sizes'][$size]))
+            wp_send_json(array(
+                'meta_not_exists' => isset($meta['sizes'][$size]),
+                'size' => $size,
+                'meta' => $meta,
+            ));
+
+        $file = $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $meta['sizes'][$size]['file'];
+
+        if (file_exists($file)) {
+            $file_existed = true;
+            $file_deleted = unlink($file);
+        } else {
+            $file_existed = false;
+            $file_deleted = false;
+        }
+
+        unset($meta['sizes'][$size]);
+        wp_update_attachment_metadata($attachment_id, $meta);
+
+        wp_send_json(array(
+            'file_existed' => $file_existed,
+            'file_deleted' => $file_deleted,
+            'file' => $file,
             'meta' => $meta,
         ));
 
