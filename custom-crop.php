@@ -69,7 +69,7 @@ class Custom_Crop
 
         $upload_dir = wp_upload_dir();
         $path_parts = pathinfo($metadata['file']);
-        $sizes_dir =  $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
+        $sizes_dir_url =  $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
 
         ob_start();
 
@@ -88,7 +88,7 @@ class Custom_Crop
                         foreach ($this->sizes as $size => $size_opts) {
                         if (isset($metadata['sizes'][$size])) {
 
-                            $prev = $sizes_dir . '/' . $metadata['sizes'][$size]['file'];
+                            $prev = $sizes_dir_url . '/' . $metadata['sizes'][$size]['file'];
                         } else {
                             $prev = $placeholder;
                         }
@@ -257,7 +257,7 @@ class Custom_Crop
 
                 if (!isset($metadata['sizes'][$size]))  continue;
 
-                $avalieble_files[] = $size_opts[0];
+                $avalieble_files[] = '<a href="'.$sizes_dir_url . '/' . $metadata['sizes'][$size]['file'] . '">' . $size_opts[0] . '</a>';
 
             }
 //            var_dump($avalieble_files);
