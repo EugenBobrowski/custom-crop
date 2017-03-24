@@ -160,11 +160,11 @@ class Custom_Crop
                                     <span class="dashicons dashicons-editor-expand"></span>
                                     Cover
                                 </button>
-                                <button type="button"
-                                        class="button image-actions cover">
-                                    <span class="dashicons dashicons-search"></span>
-                                    100%
-                                </button>
+<!--                                <button type="button"-->
+<!--                                        class="button image-actions cover">-->
+<!--                                    <span class="dashicons dashicons-search"></span>-->
+<!--                                    100%-->
+<!--                                </button>-->
                             </div>
                             <div class="imgedit-group" style="display: none">
                                 <div class="imgedit-group-top">
