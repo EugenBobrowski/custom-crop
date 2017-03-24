@@ -283,15 +283,6 @@ class Custom_Crop
         return $content . ob_get_clean();
     }
 
-    public static function inline_views()
-    {
-        wp_get_attachment_image_src();
-        wp_generate_attachment_metadata()
-        ?>
-
-        <?php
-    }
-
     public function get_sizes()
     {
 
