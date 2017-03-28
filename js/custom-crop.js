@@ -20,7 +20,7 @@
                 "change #sizes": "select_size",
                 "click .fit-in": "fit_in",
                 "click .cover": "cover",
-                "click .origin": "origin",
+                "click .origin-zoom": "origin_zoom",
                 "click .center": "center",
                 "click .media-router>a": "change_size"
             },
@@ -89,6 +89,8 @@
 
                 size.max_zoom = this.get_max_zoom(true);
                 if (size.max_zoom < 1) size.max_zoom = 1;
+
+                $modal.find('.origin-zoom').css('left', (1 / size.max_zoom * 100) + '%' );
 
                 console.log(size.max_zoom);
 
@@ -198,6 +200,10 @@
                     zoom = area.h / img.h;
                 }
                 return zoom;
+            },
+            origin_zoom: function (e) {
+                this.zoom(1);
+                this.slider_set_zoom(1);
             },
             fit_in: function (e) {
 

@@ -134,7 +134,10 @@ class Custom_Crop
                         </div>
                         <div class="slider-area">
                             <div class="slider"></div>
-<!--                            <a href="#100" class="100percent">100%</a>-->
+                            <div class="scale">
+                                <a href="#100" class="origin-zoom">100%</a>
+                            </div>
+
                         </div>
                         <div class="media-sidebar imgedit-settings">
                             <div class="attachment-details imgedit-group    ">
