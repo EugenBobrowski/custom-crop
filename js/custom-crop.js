@@ -170,6 +170,7 @@
             zoom: function (zoom) {
                 $img.width($img.data('w') * zoom)
                     .height($img.data('h') * zoom);
+                this.preview();
             },
 
             get_max_zoom: function (cover) {
@@ -204,6 +205,7 @@
             origin_zoom: function (e) {
                 this.zoom(1);
                 this.slider_set_zoom(1);
+
             },
             fit_in: function (e) {
 
