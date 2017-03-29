@@ -8,7 +8,7 @@ Author: MRKS
 Version: 1.0
 */
 
-define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.1');
+define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.2');
 
 class Custom_Crop
 {
@@ -59,10 +59,9 @@ class Custom_Crop
     public function add_featured_image_display_settings($content, $post_id, $attachment_id = false)
     {
 
-        if (empty($attachment_id)) return $content;
+        if (empty($attachment_id) || get_post_thumbnail_id($post_id) != $attachment_id) return $content;
 
         $this->get_sizes();
-        $default = reset($this->sizes);
 
         $metadata = wp_get_attachment_metadata($attachment_id);
         $src = wp_get_attachment_image_src($attachment_id, 'full');
@@ -164,11 +163,11 @@ class Custom_Crop
                                     <span class="dashicons dashicons-editor-expand"></span>
                                     Cover
                                 </button>
-<!--                                <button type="button"-->
-<!--                                        class="button image-actions cover">-->
-<!--                                    <span class="dashicons dashicons-search"></span>-->
-<!--                                    100%-->
-<!--                                </button>-->
+                                <!--                                <button type="button"-->
+                                <!--                                        class="button image-actions cover">-->
+                                <!--                                    <span class="dashicons dashicons-search"></span>-->
+                                <!--                                    100%-->
+                                <!--                                </button>-->
                             </div>
                         </div>
                     </div>
