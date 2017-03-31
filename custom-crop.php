@@ -23,7 +23,7 @@ class Custom_Crop
         add_action('load-post.php', array($this, 'init'));
         add_action('load-post-new.php', array($this, 'init'));
         add_filter('admin_post_thumbnail_html', array($this, 'add_featured_image_display_settings'), 10, 3);
-        add_action('after_setup_theme', array($this, 'add_image_size'));
+        add_filter('wp_get_attachment_image_src', array($this, 'add_timestamp_to_src'), 10, 3);
         add_action('wp_ajax_custom_crop', array($this, 'ajax_done'));
         add_filter('wp_generate_attachment_metadata', array($this, 'save_cropped_sizes'), 10, 2);
     }
@@ -295,9 +295,16 @@ class Custom_Crop
         return $this->sizes;
     }
 
-    public function add_image_size()
+    public function add_timestamp_to_src($image, $attachment_id, $size)
     {
+        $meta = wp_get_attachment_metadata($attachment_id);
 
+        if ($image[3] && isset($meta['sizes'][$size]) && isset($meta['sizes'][$size]['timestamp']))
+            $image[0] = add_query_arg(array(
+                't' => $meta['sizes'][$size]['timestamp'],
+            ), $image[0]);
+
+        return $image;
     }
 
     public function ajax_done()
@@ -310,7 +317,7 @@ class Custom_Crop
 
 
         if ($_POST['remove']) {
-            return $this->ajax_remove($attachment_id, $size);
+            $this->ajax_remove($attachment_id, $size);
         }
 
         $size_meta = array(
@@ -337,8 +344,10 @@ class Custom_Crop
 
         $origin_path = $upload_dir['basedir'] . '/' . $meta['file'];
         $size_meta['file'] = $path_parts['filename'] . '-' . $size . '.jpg';
+        $size_meta['timestamp'] = time();
         $dst_path = $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
         $dst_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
+
 
         if (imagejpeg($this->crop($origin_path, $size_meta['width'], $size_meta['height'], $size_meta['img_width'], $size_meta['img_height'], $size_meta['x'], $size_meta['y']), $dst_path, 90))
             $meta['sizes'][$size] = $size_meta;
@@ -349,6 +358,8 @@ class Custom_Crop
             'url' => $dst_url,
             'meta' => $meta,
         ));
+
+
 
     }
 
