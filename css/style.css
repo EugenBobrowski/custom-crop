@@ -69,10 +69,11 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
+  outline: none;
 }
 .custom-crop-modal .slider-area .ui-slider-horizontal .ui-slider-handle {
   top: -8px;
-  margin-left: -8px;
+  margin-left: -11px;
 }
 .custom-crop-modal .slider-area .ui-state-active,
 .custom-crop-modal .slider-area .ui-widget-content .ui-state-active,
@@ -82,6 +83,38 @@
 .custom-crop-modal .slider-area .ui-button.ui-state-active:hover {
   background: #008ec2;
   border-color: #006799;
+}
+.custom-crop-modal .scale {
+  width: 100%;
+  height: 1px;
+  margin: 5px 0 0 0 ;
+  position: relative;
+}
+.custom-crop-modal .origin-zoom {
+  display: block;
+  position: absolute;
+  width: 30px;
+  text-align: center;
+  margin: 8px 0 0 -15px;
+  top: 0;
+  left: 100%;
+  color: #999;
+  text-decoration: none;
+  font-size: 0.8em;
+}
+.custom-crop-modal .origin-zoom:hover,
+.custom-crop-modal .origin-zoom:focus {
+  color: #999;
+  box-shadow: none;
+}
+.custom-crop-modal .origin-zoom:after {
+  content: '';
+  position: absolute;
+  height: 8px;
+  width: 1px;
+  bottom: 100%;
+  right: 50%;
+  background: #a7a7a7;
 }
 .custom-crop-modal .image-actions .dashicons {
   vertical-align: middle;

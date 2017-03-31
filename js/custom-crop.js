@@ -1,7 +1,7 @@
 'use strict';
 
 (function ($) {
-    var $body, $window, $modal, $area, $img, $preview;
+    var $body, $window, $modal, $area, $img, $preview, size;
     $(document).ready(function () {
         $body = $('body');
         $window = $(window);
@@ -18,10 +18,9 @@
                 "slide .slider": "slide",
                 "drag .cropped-img": "drag",
                 "change #sizes": "select_size",
-                "change #crop-width": "resize_area",
-                "change #crop-height": "resize_area",
                 "click .fit-in": "fit_in",
                 "click .cover": "cover",
+                "click .origin-zoom": "origin_zoom",
                 "click .center": "center",
                 "click .media-router>a": "change_size"
             },
@@ -32,8 +31,10 @@
                 $img.data('h', $img.find('img').height())
                     .data('w', $img.find('img').width())
                     .addClass('responsive');
-
+                this.resize_area();
                 this.slider_init();
+                this.zoom(1);
+                $img.draggable();
 
             },
             open: function () {
@@ -41,14 +42,13 @@
             },
             resize_area: function (e) {
 
-                var w = $body.find(".custom-crop-modal").find('#crop-width').val(),
-                    h = $body.find(".custom-crop-modal").find('#crop-height').val(),
+                var $size = $modal.find('.media-router>a.active');
+                var w = $size.data('width'),
+                    h = $size.data('height'),
                     margin = {
                         x: ($area.outerWidth() - w) / 2,
                         y: ($area.outerHeight() - h) / 2
                     };
-                // console.log(area.outerWidth() + ' - ' + w);
-                // console.log(area.outerHeight() + ' - ' + h);
                 $area.css('padding', margin.y + 'px ' + margin.x + 'px');
                 $area.find('.margin.top').height(margin.y);
                 $area.find('.margin.bottom').height(margin.y);
@@ -80,52 +80,34 @@
                     $this = $modal.find('.media-router>a.active');
                 }
 
-                var size = $this.data();
+                size = $this.data();
 
                 if (size.savedWidth !== undefined) $modal.find('.button.delete').fadeIn();
                 else $modal.find('.button.delete').fadeOut();
 
-                $modal.find('#crop-width').val((size.savedWidth !== undefined) ? size.savedWidth : size.width);
-                $modal.find('#crop-height').val((size.savedHeight !== undefined) ? size.savedHeight : size.height);
                 this.resize_area();
 
-                if (size.savedImg_width != undefined && size.savedImg_height != undefined ) {
+                size.max_zoom = this.get_max_zoom(true);
+                if (size.max_zoom < 1) size.max_zoom = 1;
+
+                $modal.find('.origin-zoom').css('left', (1 / size.max_zoom * 100) + '%' );
+
+                console.log(size.max_zoom);
+
+                if (size.savedImg_width != undefined && size.savedImg_height != undefined) {
                     var zoom;
 
                     zoom = size.savedImg_width / $img.data('w');
 
-                    this.slide(false, {value: zoom * 100});
+                    $img.width(size.savedImg_width)
+                        .height(size.savedImg_height);
+
+                    this.slider_set_zoom(zoom);
+
+                    this.preview();
 
                 }
-                if (size.savedX != undefined && size.savedY != undefined ) {
-                    $img.css('left', size.savedX).css('top', size.savedY);
-                    this.preview({
-                        position: {
-                            left: size.savedX,
-                            top: size.savedY
-                        }
-                    });
-                }
-            },
-            select_size: function (e) {
-                var selected = $modal.find('#sizes').find('option:selected');
-                var size = selected.data();
-
-                console.log(size);
-
-                $modal.find('#crop-width').val((size.savedWidth !== undefined) ? size.savedWidth : size.width);
-                $modal.find('#crop-height').val((size.savedHeight !== undefined) ? size.savedHeight : size.height);
-                this.resize_area();
-
-                if (size.savedImg_width != undefined && size.savedImg_height != undefined ) {
-                    var zoom;
-
-                    zoom = size.savedImg_width / $img.data('w');
-
-                    this.slide(false, {value: zoom * 100});
-
-                }
-                if (size.savedX != undefined && size.savedY != undefined ) {
+                if (size.savedX != undefined && size.savedY != undefined) {
                     $img.css('left', size.savedX).css('top', size.savedY);
                     this.preview({
                         position: {
@@ -167,21 +149,20 @@
             },
             slider_init: function () {
 
-                this.resize_area();
-
-                this.slide({}, {value: 100});
-                $img.draggable();
-
                 $modal.find(".slider").slider({
                     value: 100
                 });
 
             },
-            slide: function (e, ui) {
-                if (e == false) $modal.find(".slider").slider({
-                    value: ui.value
+            slider_set_zoom: function (zoom) {
+                $modal.find(".slider").slider({
+                    value: zoom / size.max_zoom * 100
                 });
-                this.zoom(ui.value / 100)
+            },
+            slide: function (e, ui) {
+                this.zoom(size.max_zoom * ui.value / 100);
+
+                this.preview()
             },
             drag: function (e, ui) {
                 this.preview(ui);
@@ -189,11 +170,10 @@
             zoom: function (zoom) {
                 $img.width($img.data('w') * zoom)
                     .height($img.data('h') * zoom);
-
-                this.preview()
+                this.preview();
             },
-            fit_in: function (e, cover) {
 
+            get_max_zoom: function (cover) {
                 if (cover == undefined) cover = false;
 
                 var area = {
@@ -213,13 +193,6 @@
 
                 horizontal = (cover) ? !horizontal : horizontal;
 
-                var is_small = (horizontal) ? (img.w < area.w) : (img.h < area.h);
-
-                if (is_small) {
-                    alert('The original image to small');
-                    return this;
-                }
-
                 if (horizontal) {
                     //horizontal
                     zoom = area.w / img.w;
@@ -227,15 +200,42 @@
                     //vertical
                     zoom = area.h / img.h;
                 }
+                return zoom;
+            },
+            origin_zoom: function (e) {
+                this.zoom(1);
+                this.slider_set_zoom(1);
 
-                this.slide(false, {value: zoom * 100});
+            },
+            fit_in: function (e) {
+
+                var zoom = this.get_max_zoom();
+
+                if (zoom > 1) {
+                    alert('The original image to small');
+                    zoom = 1;
+                }
+
+                this.zoom(zoom);
+
+                this.slider_set_zoom(zoom);
 
                 this.center();
 
                 return this;
             },
             cover: function (e) {
-                this.fit_in(e, true);
+
+                var zoom = this.get_max_zoom(true);
+                console.log(zoom);
+
+                this.zoom(zoom);
+
+                this.slider_set_zoom(zoom);
+
+                this.center();
+
+                return this;
             },
             center: function () {
                 var pos = {
@@ -247,7 +247,6 @@
                 this.preview({
                     position: pos
                 });
-                console.log(pos);
             },
             delete: function (e) {
                 var $selected = $modal.find('.media-router>a.active');
@@ -259,9 +258,6 @@
                     remove: true
 
                 }, function (response) {
-                    console.log(response);
-
-
                     $selected
                         .removeAttr('saved-width')
                         .removeAttr('saved-height')
@@ -287,7 +283,6 @@
                     if (response.file_deleted) {
 
                     }
-
 
 
                 });
@@ -351,7 +346,7 @@
                         // $body.find( ".custom-crop-modal" ).find( ".slider" ).slider();
 
 
-                        $window.resize(function(e){
+                        $window.resize(function (e) {
                             cropViewObject.resize_area(e);
                         });
                         $modal = $body.find(".custom-crop-modal");

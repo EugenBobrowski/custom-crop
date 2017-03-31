@@ -8,7 +8,7 @@ Author: MRKS
 Version: 1.0
 */
 
-define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.1');
+define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.2');
 
 class Custom_Crop
 {
@@ -59,10 +59,9 @@ class Custom_Crop
     public function add_featured_image_display_settings($content, $post_id, $attachment_id = false)
     {
 
-        if (empty($attachment_id)) return $content;
+        if (empty($attachment_id) || get_post_thumbnail_id($post_id) != $attachment_id) return $content;
 
         $this->get_sizes();
-        $default = reset($this->sizes);
 
         $metadata = wp_get_attachment_metadata($attachment_id);
         $src = wp_get_attachment_image_src($attachment_id, 'full');
@@ -134,6 +133,10 @@ class Custom_Crop
                         </div>
                         <div class="slider-area">
                             <div class="slider"></div>
+                            <div class="scale">
+                                <a href="#100" class="origin-zoom">100%</a>
+                            </div>
+
                         </div>
                         <div class="media-sidebar imgedit-settings">
                             <div class="attachment-details imgedit-group    ">
@@ -160,73 +163,12 @@ class Custom_Crop
                                     <span class="dashicons dashicons-editor-expand"></span>
                                     Cover
                                 </button>
-<!--                                <button type="button"-->
-<!--                                        class="button image-actions cover">-->
-<!--                                    <span class="dashicons dashicons-search"></span>-->
-<!--                                    100%-->
-<!--                                </button>-->
+                                <!--                                <button type="button"-->
+                                <!--                                        class="button image-actions cover">-->
+                                <!--                                    <span class="dashicons dashicons-search"></span>-->
+                                <!--                                    100%-->
+                                <!--                                </button>-->
                             </div>
-                            <div class="imgedit-group" style="display: none">
-                                <div class="imgedit-group-top">
-                                    <h2>Image Size</h2>
-                                    <button type="button" class="dashicons dashicons-editor-help imgedit-help-toggle"
-                                            onclick="imageEdit.toggleHelp(this);return false;" aria-expanded="false">
-                                        <span class="screen-reader-text">Image Crop Help</span></button>
-
-                                    <div class="imgedit-help">
-                                        <p>To crop the image, click on it and drag to make your selection.</p>
-
-                                        <p><strong>Crop Aspect Ratio</strong><br>
-                                            The aspect ratio is the relationship between the width and height. You can
-                                            preserve the aspect ratio by holding down the shift key while resizing your
-                                            selection. Use the input box to specify the aspect ratio, e.g. 1:1 (square),
-                                            4:3, 16:9, etc.</p>
-                                    </div>
-                                </div>
-
-                                <fieldset class="imgedit-crop-ratio">
-
-                                    <legend>Sizes:</legend>
-                                    <div class="nowrap">
-                                        <select id="sizes">
-                                            <?php
-                                            foreach ($this->sizes as $size => $size_opts) {
-                                                ?>
-                                                <option value="<?php echo $size; ?>"
-                                                        data-width="<?php echo $size_opts[1]; ?>"
-                                                        data-height="<?php echo $size_opts[2]; ?>"
-                                                    <?php
-                                                    if (isset($metadata['sizes'][$size])) {
-                                                        foreach ($metadata['sizes'][$size] as $param => $param_val) {
-                                                            echo ' data-saved-' . $param . '="' . $param_val . '" ';
-                                                        }
-                                                    }
-                                                    ?>
-                                                ><?php echo $size_opts[0]; ?></option>
-                                                <?php
-                                            }
-
-                                            ?>
-                                        </select>
-                                    </div>
-                                </fieldset>
-                                <fieldset class="imgedit-crop-ratio">
-                                    <legend>R - Ratio:</legend>
-                                    <div class="nowrap">
-                                        <label><span class="screen-reader-text">crop ratio width</span>
-                                            <input type="text" id="crop-width"
-                                                   onchange=""
-                                                   value="<?php echo $default[1]; ?>"/>
-                                        </label>
-                                        <span class="imgedit-separator">:</span>
-                                        <label><span class="screen-reader-text">crop ratio height</span>
-                                            <input type="text" id="crop-height" value="<?php echo $default[2];; ?>"/>
-                                        </label>
-                                    </div>
-                                </fieldset>
-
-                            </div>
-
                         </div>
                     </div>
                 </div>
