@@ -239,12 +239,21 @@ class Custom_Crop
 
     public function add_timestamp_to_src($image, $attachment_id, $size)
     {
+        if (empty($image[3]) || !is_string($size)) return $image;
+
         $meta = wp_get_attachment_metadata($attachment_id);
 
-        if ($image[3] && isset($meta['sizes'][$size]) && isset($meta['sizes'][$size]['timestamp']))
-            $image[0] = add_query_arg(array(
-                't' => $meta['sizes'][$size]['timestamp'],
-            ), $image[0]);
+        var_dump($size);
+
+        if (empty($meta['sizes']) ||
+            empty($meta['sizes'][$size]) ||
+            empty($meta['sizes'][$size]['timestamp'])
+        ) return $image;
+
+        $image[0] = add_query_arg(array(
+            't' => $meta['sizes'][$size]['timestamp'],
+        ), $image[0]);
+
 
         return $image;
     }
@@ -300,7 +309,6 @@ class Custom_Crop
             'url' => $dst_url,
             'meta' => $meta,
         ));
-
 
 
     }
