@@ -243,8 +243,6 @@ class Custom_Crop
 
         $meta = wp_get_attachment_metadata($attachment_id);
 
-        var_dump($size);
-
         if (empty($meta['sizes']) ||
             empty($meta['sizes'][$size]) ||
             empty($meta['sizes'][$size]['timestamp'])
