@@ -43,12 +43,34 @@
             resize_area: function (e) {
 
                 var $size = $modal.find('.media-router>a.active');
-                var w = $size.data('width'),
-                    h = $size.data('height'),
-                    margin = {
-                        x: ($area.outerWidth() - w) / 2,
-                        y: ($area.outerHeight() - h) / 2
-                    };
+                var size = {
+                        w: $size.data('width'),
+                        h: $size.data('height')
+                    },
+                    area = {
+                        w: $area.outerWidth(),
+                        h: $area.outerHeight(),
+                        zoom: 1
+                    },
+                    margin = {};
+
+                if (size.w > area.w || size.h > area.h) {
+                    area.ratio = area.w / area.h;
+                    size.ratio = size.w / size.h;
+
+                    if (size.ratio > area.ratio) {
+                        //horizontal
+                        ares.zoom = area.w / size.w;
+                    } else {
+                        //vertical
+                        area.zoom = area.h / size.h;
+                    }
+                }
+
+                margin.x = (area.w - (size.w * area.zoom)) / 2;
+                margin.y = (area.h - (size.h * area.zoom)) / 2;
+                console.log(area, size, area.x, (size.x * area.zoom));
+
                 $area.css('padding', margin.y + 'px ' + margin.x + 'px');
                 $area.find('.margin.top').height(margin.y);
                 $area.find('.margin.bottom').height(margin.y);
@@ -58,13 +80,10 @@
                 $area.find('.margin.right').width(margin.x)
                     .css('top', margin.y)
                     .css('bottom', margin.y);
-                $area.data('w', w).data('h', h);
+                $area.data(area);
 
                 this.preview({
-                    size: {
-                        w: w,
-                        h: h
-                    }
+                    size: size
                 });
 
                 return this;
@@ -227,7 +246,7 @@
             cover: function (e) {
 
                 var zoom = this.get_max_zoom(true);
-                console.log(zoom);
+
 
                 this.zoom(zoom);
 
