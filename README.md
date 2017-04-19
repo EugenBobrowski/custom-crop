@@ -32,6 +32,15 @@ if(has_post_thumbnail()) {
     }
 }
 ```
+
+## Data structure
+
+```javascript
+
+
+
+```
+
  
 ## ToDo
 
