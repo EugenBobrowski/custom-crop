@@ -303,6 +303,8 @@ class Custom_Crop
 
         wp_update_attachment_metadata($attachment_id, $meta);
 
+        do_action('update_cropshop_size', $size, $attachment_id);
+
         wp_send_json(array(
             'url' => $dst_url,
             'meta' => $meta,
