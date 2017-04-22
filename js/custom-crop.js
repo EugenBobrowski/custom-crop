@@ -336,7 +336,7 @@
                     size: $selected.data('size'),
                     area_size: [$area.data('w'), $area.data('h')],
                     img_size: [$img.width()/ area_zoom , $img.height()/ area_zoom ],
-                    position: [$img.data('left')/ area_zoom , $img.data('top')/ area_zoom ]
+                    position: [$img.data('left') , $img.data('top') ]
                 };
 
 
@@ -347,8 +347,8 @@
                     $selected
                         .data('saved-width', $area.width()/ area_zoom )
                         .data('saved-height', $area.height()/ area_zoom )
-                        .data('saved-x', $img.data('left')/ area_zoom )
-                        .data('saved-y', $img.data('top')/ area_zoom )
+                        .data('saved-x', $img.data('left') )
+                        .data('saved-y', $img.data('top') )
                         .data('saved-img_width', $img.width()/ area_zoom )
                         .data('saved-img_height', $img.height()/ area_zoom );
 
