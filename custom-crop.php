@@ -8,7 +8,7 @@ Author: MRKS
 Version: 1.0
 */
 
-define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.3');
+define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.4');
 
 class Custom_Crop
 {
