@@ -128,7 +128,7 @@
                 //console.log(size.max_zoom);
 
                 if (size.savedImg_width != undefined && size.savedImg_height != undefined) {
-                    zoom = size.savedImg_width / $img.data('w') * area_zoom;
+                    zoom = size.savedImg_width / $img.data('w');
                 }
 
                 this.slider_set_zoom(zoom);
