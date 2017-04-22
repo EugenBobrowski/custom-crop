@@ -197,7 +197,13 @@
                 this.preview()
             },
             drag: function (e, ui) {
-                this.preview(ui);
+
+                this.preview({
+                    position: {
+                        top: ui.position.top / $area.data('zoom'),
+                        left: ui.position.left / $area.data('zoom')
+                    }
+                });
             },
             zoom: function (zoom) {
                 $img.width($img.data('w') * zoom * $area.data('zoom'))
@@ -271,11 +277,11 @@
             },
             center: function () {
                 var pos = {
-                    top: ($area.height() - $img.height()) / 2,
-                    left: ($area.width() - $img.width()) / 2
+                    top: ($area.data('h') - $img.height() / $area.data('zoom') ) / 2,
+                    left: ($area.data('w') - $img.width() / $area.data('zoom') ) / 2
                 };
-                $img.css('left', pos.left)
-                    .css('top', pos.top);
+                $img.css('left', pos.left * $area.data('zoom'))
+                    .css('top', pos.top * $area.data('zoom'));
                 this.preview({
                     position: pos
                 });
@@ -322,14 +328,15 @@
             save: function (e, close) {
                 var _this = this;
                 var $selected = $modal.find('.media-router>a.active');
+                var area_zoom = $area.data('zoom');
                 var data = {
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
                     attachment_id: $img.data('attachment-id'),
                     size: $selected.data('size'),
                     area_size: [$area.data('w'), $area.data('h')],
-                    img_size: [$img.width()/$area.data('zoom'), $img.height()/$area.data('zoom')],
-                    position: [$img.data('left')/$area.data('zoom'), $img.data('top')/$area.data('zoom')]
+                    img_size: [$img.width()/ area_zoom , $img.height()/ area_zoom ],
+                    position: [$img.data('left')/ area_zoom , $img.data('top')/ area_zoom ]
                 };
 
 
@@ -338,12 +345,12 @@
 
                     //console.log($selected.data());
                     $selected
-                        .data('saved-width', $area.width())
-                        .data('saved-height', $area.height())
-                        .data('saved-x', $img.data('left'))
-                        .data('saved-y', $img.data('top'))
-                        .data('saved-img_width', $img.width())
-                        .data('saved-img_height', $img.height());
+                        .data('saved-width', $area.width()/ area_zoom )
+                        .data('saved-height', $area.height()/ area_zoom )
+                        .data('saved-x', $img.data('left')/ area_zoom )
+                        .data('saved-y', $img.data('top')/ area_zoom )
+                        .data('saved-img_width', $img.width()/ area_zoom )
+                        .data('saved-img_height', $img.height()/ area_zoom );
 
                     $selected.find('img').attr('src', response.url + '?time=' + new Date().getTime());
 
