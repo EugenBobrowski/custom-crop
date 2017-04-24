@@ -8,7 +8,7 @@ Author: MRKS
 Version: 1.0
 */
 
-define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.3');
+define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.5');
 
 class Custom_Crop
 {
@@ -61,7 +61,7 @@ class Custom_Crop
 
         if (empty($attachment_id) || get_post_thumbnail_id($post_id) != $attachment_id) return $content;
 
-        $this->get_sizes();
+        $this->get_sizes($post_id);
 
         $metadata = wp_get_attachment_metadata($attachment_id);
         $src = wp_get_attachment_image_src($attachment_id, 'full');
@@ -225,14 +225,14 @@ class Custom_Crop
         return $content . ob_get_clean();
     }
 
-    public function get_sizes()
+    public function get_sizes($post_id = null)
     {
 
         if (empty($this->sizes))
             $this->sizes = apply_filters('custom_crop_sizes', array(
                 'custom-crop' => array(__('Custom Crop'), 300, 200),
                 'custom-crop43' => array(__('Custom Crop 4:3'), 400, 300),
-            ));
+            ), $post_id);
 
         return $this->sizes;
     }
