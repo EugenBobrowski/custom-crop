@@ -8,7 +8,7 @@ Author: MRKS
 Version: 1.0
 */
 
-define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.1.6');
+define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.1.7');
 
 class Custom_Crop
 {
@@ -190,6 +190,9 @@ class Custom_Crop
                             <!--                            <button type="button" id="custom_crop_cancel"-->
                             <!--                                    class="button media-button button-large cancel widget-control-remove">Cancel-->
                             <!--                            </button>-->
+
+                            <span class="save-spinner spinner"
+                                  style="float: right; margin: 20px 0 0 0;"></span>
 
                         </div>
                     </div>

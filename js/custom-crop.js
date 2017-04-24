@@ -329,6 +329,7 @@
                 var _this = this;
                 var $selected = $modal.find('.media-router>a.active');
                 var area_zoom = $area.data('zoom');
+                var $spinner = $modal.find('.save-spinner');
                 var data = {
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
@@ -338,7 +339,7 @@
                     img_size: [$img.width()/ area_zoom , $img.height()/ area_zoom ],
                     position: [$img.data('left') , $img.data('top') ]
                 };
-
+                $spinner.addClass('is-active');
 
                 $.post(custom_crop_ajax.url, data, function (response) {
                     // console.log(response, custom_crop_ajax, $img.data('attachment-id'));
@@ -355,6 +356,8 @@
                     $selected.find('img').attr('src', response.url + '?time=' + new Date().getTime());
 
                     $modal.find('.button.delete').fadeIn();
+
+                    $spinner.removeClass('is-active');
 
                     if (close != undefined && close == true) _this.close(e);
                 });
