@@ -3,7 +3,7 @@
 /*
 Plugin Name: Custom  Crop
 Plugin URI: http://wordpress.org/plugins/antispam/
-Description:
+Description: Custom Crop Plugin
 Author: MRKS
 Version: 1.0
 */
@@ -139,7 +139,7 @@ class Custom_Crop
 
                         </div>
                         <div class="media-sidebar imgedit-settings">
-                            <div class="attachment-details imgedit-group    ">
+                            <div class="attachment-details imgedit-group">
                                 <h2><?php _e('Preview'); ?></h2>
 
                                 <div class="preview" data-left="0" data-top="0">
@@ -201,6 +201,7 @@ class Custom_Crop
         </script>
         <a href="#"
            id="modify_thumbnail"
+           class="custom-crop-modal"
            data-metadata="<?php echo esc_attr(json_encode($metadata)); ?>"
         > <?php _e('Modify thumbnail'); ?></a>
 

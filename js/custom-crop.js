@@ -1,7 +1,7 @@
 'use strict';
 
 (function ($) {
-    var $body, $window, $modal, $area, $img, $preview, size;
+    var $body, $window, $modal, $area, $img, $preview, size, Attachments = {}, attachment = {};
     $(document).ready(function () {
         $body = $('body');
         $window = $(window);
@@ -123,7 +123,7 @@
                 size.max_zoom = this.get_max_zoom(true);
                 if (size.max_zoom < 1) size.max_zoom = 1;
 
-                $modal.find('.origin-zoom').css('left', (1 / size.max_zoom * 100) + '%' );
+                $modal.find('.origin-zoom').css('left', (1 / size.max_zoom * 100) + '%');
 
                 //console.log(size.max_zoom);
 
@@ -336,8 +336,8 @@
                     attachment_id: $img.data('attachment-id'),
                     size: $selected.data('size'),
                     area_size: [$area.data('w'), $area.data('h')],
-                    img_size: [$img.width()/ area_zoom , $img.height()/ area_zoom ],
-                    position: [$img.data('left') , $img.data('top') ]
+                    img_size: [$img.width() / area_zoom, $img.height() / area_zoom],
+                    position: [$img.data('left'), $img.data('top')]
                 };
                 $spinner.addClass('is-active');
 
@@ -346,12 +346,12 @@
 
                     //console.log($selected.data());
                     $selected
-                        .data('saved-width', $area.width()/ area_zoom )
-                        .data('saved-height', $area.height()/ area_zoom )
-                        .data('saved-x', $img.data('left') )
-                        .data('saved-y', $img.data('top') )
-                        .data('saved-img_width', $img.width()/ area_zoom )
-                        .data('saved-img_height', $img.height()/ area_zoom );
+                        .data('saved-width', $area.width() / area_zoom)
+                        .data('saved-height', $area.height() / area_zoom)
+                        .data('saved-x', $img.data('left'))
+                        .data('saved-y', $img.data('top'))
+                        .data('saved-img_width', $img.width() / area_zoom)
+                        .data('saved-img_height', $img.height() / area_zoom);
 
                     $selected.find('img').attr('src', response.url + '?time=' + new Date().getTime());
 
@@ -413,12 +413,23 @@
         });
 
         // When the user clicks a button, open a modal.
-        $body.on('click', '#modify_thumbnail', function (event) {
+        $body.on('click', '.custom-crop-modal', function (event) {
             event.preventDefault();
+            var $this = $(this);
+            var id = $this.data('attachment-id');
+
+            if (undefined === id)  return false;
+
+            if (typeof Attachments[id] !== 'object') Attachments[id] = {
+                id: id
+            };
+
+            attachment = Attachments[id];
+
             // Assign the ModalContentView to the modal as the `content` subview.
             // Proxies to View.views.set( '.media-modal-content', content );
             // modal.content(new ModalContentView());
-            if ($modal == undefined)
+            if ($modal === undefined)
                 modal.content(new ModalContentView());
 
             // Out of the box, the modal is closed, so we need to open() it.
