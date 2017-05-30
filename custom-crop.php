@@ -163,11 +163,6 @@ class Custom_Crop
                                     <span class="dashicons dashicons-editor-expand"></span>
                                     Cover
                                 </button>
-                                <!--                                <button type="button"-->
-                                <!--                                        class="button image-actions cover">-->
-                                <!--                                    <span class="dashicons dashicons-search"></span>-->
-                                <!--                                    100%-->
-                                <!--                                </button>-->
                             </div>
                         </div>
                     </div>
@@ -187,9 +182,6 @@ class Custom_Crop
                             <button type="button" id="custom_crop_delete"
                                     class="button media-button button-large delete">Delete
                             </button>
-                            <!--                            <button type="button" id="custom_crop_cancel"-->
-                            <!--                                    class="button media-button button-large cancel widget-control-remove">Cancel-->
-                            <!--                            </button>-->
 
                             <span class="save-spinner spinner"
                                   style="float: right; margin: 20px 0 0 0;"></span>
@@ -201,7 +193,7 @@ class Custom_Crop
         </script>
         <a href="#"
            id="modify_thumbnail"
-           class="custom-crop-modal"
+           class="custom-crop-modal-open"
            data-metadata="<?php echo esc_attr(json_encode($metadata)); ?>"
         > <?php _e('Modify thumbnail'); ?></a>
 

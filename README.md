@@ -37,7 +37,9 @@ if(has_post_thumbnail()) {
 
 ```javascript
 
-
+var attachment = {
+    
+};
 
 ```
 

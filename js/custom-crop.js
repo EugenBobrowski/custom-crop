@@ -413,7 +413,7 @@
         });
 
         // When the user clicks a button, open a modal.
-        $body.on('click', '.custom-crop-modal', function (event) {
+        $body.on('click', '.custom-crop-modal-open', function (event) {
             event.preventDefault();
             var $this = $(this);
             var id = $this.data('attachment-id');
