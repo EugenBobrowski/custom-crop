@@ -38,7 +38,9 @@ if(has_post_thumbnail()) {
 ```javascript
 
 var attachment = {
-    
+    attachment_id: 40,
+    width: 888,
+    height: 888
 };
 
 ```

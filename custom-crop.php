@@ -32,6 +32,7 @@ class Custom_Crop
     {
 
         add_action('admin_enqueue_scripts', array($this, 'assets'));
+        add_action('admin_footer', array($this, 'modal'));
 //        add_action('admin_footer', array($this, 'inline_views'));
 
     }
@@ -39,6 +40,8 @@ class Custom_Crop
     public function assets()
     {
         wp_enqueue_media();
+
+        $this->get_sizes();
 
         wp_enqueue_script('custom-crop', plugin_dir_url(__FILE__) . 'js/custom-crop.js', array(
             'jquery',
@@ -49,6 +52,7 @@ class Custom_Crop
             '_wpnonce' => wp_create_nonce('custom_crop'),
             'action' => 'custom_crop',
             'placeholder' => plugin_dir_url(__FILE__) . 'css/placeholder.png',
+            'sizes' => $this->sizes,
         ));
 
 
@@ -56,22 +60,8 @@ class Custom_Crop
         wp_enqueue_style('custom-crop', plugin_dir_url(__FILE__) . 'css/style.css', array(), CUSTOM_CROP_VERSION);
     }
 
-    public function add_featured_image_display_settings($content, $post_id, $attachment_id = false)
-    {
-
-        if (empty($attachment_id) || get_post_thumbnail_id($post_id) != $attachment_id) return $content;
-
-        $this->get_sizes($post_id);
-
-        $metadata = wp_get_attachment_metadata($attachment_id);
-        $src = wp_get_attachment_image_src($attachment_id, 'full');
-
-        $upload_dir = wp_upload_dir();
-        $path_parts = pathinfo($metadata['file']);
-        $sizes_dir_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
-
-        ob_start();
-
+    public function modal() {
+        $this->get_sizes();
         ?>
         <script type="text/template" id="tmpl-modal-content" class="hide-menu">
             <div class="image-editor media-frame hide-menu ">
@@ -84,32 +74,16 @@ class Custom_Crop
                         $active = 'active';
                         $placeholder = plugin_dir_url(__FILE__) . 'css/placeholder.png';
 
-                        foreach ($this->sizes as $size => $size_opts) {
-                            if (isset($metadata['sizes'][$size])) {
-
-                                $prev = $sizes_dir_url . '/' . $metadata['sizes'][$size]['file'];
-                            } else {
-                                $prev = $placeholder;
-                            }
-
+                        foreach ($this->sizes as $size_id => $size_opts) {
                             ?>
                             <a href="#" class="media-menu-item <?php echo $active; ?>"
-                               data-size="<?php echo $size; ?>"
-                               data-width="<?php echo $size_opts[1]; ?>"
-                               data-height="<?php echo $size_opts[2]; ?>"
-                                <?php
-                                if (isset($metadata['sizes'][$size])) {
-                                    foreach ($metadata['sizes'][$size] as $param => $param_val) {
-                                        echo ' data-saved-' . $param . '="' . $param_val . '" ';
-                                    }
-                                }
-                                ?>
+                               data-size="<?php echo $size_id; ?>"
                             >
                                 <span class="prev-icon">
-                                    <img src="<?php echo $prev; ?>" alt="">
+                                    <img src="<?php echo $placeholder; ?>" alt="">
                                 </span>
 
-                                <?php echo $size_opts[0]; ?></a>
+                                <?php echo $size_opts['title']; ?></a>
                             <?php
                             $active = '';
                         }
@@ -120,10 +94,8 @@ class Custom_Crop
                 <div class="media-frame-content">
                     <div class="attachments-browser">
                         <div class="crop-area">
-                            <div class="cropped-img" data-attachment-id="<?php echo $attachment_id; ?>">
-                                <img src="<?php echo $src[0]; ?>"
-                                     width="<?php echo $src[1]; ?>"
-                                     height="<?php echo $src[2]; ?>"
+                            <div class="cropped-img">
+                                <img src="<?php echo $placeholder; ?>"
                                      alt="" class=""/>
                             </div>
                             <div class="margin top"></div>
@@ -143,14 +115,14 @@ class Custom_Crop
                                 <h2><?php _e('Preview'); ?></h2>
 
                                 <div class="preview" data-left="0" data-top="0">
-                                    <img src="<?php echo $src[0]; ?>"
+                                    <img src="<?php echo $placeholder; ?>"
                                          alt="" class="">
                                 </div>
                             </div>
                             <div class="imgedit-group">
                                 <button type="button"
                                         class="button image-actions center"><span
-                                        class="dashicons dashicons-move"></span>
+                                            class="dashicons dashicons-move"></span>
                                     Center
                                 </button>
                                 <button type="button"
@@ -191,22 +163,42 @@ class Custom_Crop
                 </div>
             </div>
         </script>
+        <?php
+    }
+
+    public function add_featured_image_display_settings($content, $post_id, $attachment_id = false)
+    {
+
+        if (empty($attachment_id) || get_post_thumbnail_id($post_id) != $attachment_id) return $content;
+
+        $this->get_sizes($post_id);
+
+        $metadata = wp_get_attachment_metadata($attachment_id);
+        $src = wp_get_attachment_image_src($attachment_id, 'full');
+
+        $upload_dir = wp_upload_dir();
+        $path_parts = pathinfo($metadata['file']);
+        $sizes_dir_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
+
+        ob_start();
+
+        ?>
         <a href="#"
            id="modify_thumbnail"
-           class="custom-crop-modal-open"
+           class="custom-crop-modal-open-link"
+           data-attachment-id="<?php echo esc_attr($attachment_id); ?>"
            data-metadata="<?php echo esc_attr(json_encode($metadata)); ?>"
         > <?php _e('Modify thumbnail'); ?></a>
 
         <?php
         $avalieble_files = array();
-        foreach ($this->sizes as $size => $size_opts) {
+        foreach ($this->sizes as $size_id => $size_opts) {
 
-            if (!isset($metadata['sizes'][$size])) continue;
+            if (!isset($metadata['sizes'][$size_id])) continue;
 
-            $avalieble_files[] = '<a href="' . $sizes_dir_url . '/' . $metadata['sizes'][$size]['file'] . '">' . $size_opts[0] . '</a>';
+            $avalieble_files[] = '<a href="' . $sizes_dir_url . '/' . $metadata['sizes'][$size_id]['file'] . '">' . $size_opts['title'] . '</a>';
 
         }
-//            var_dump($avalieble_files);
         ?>
         <?php if (count($avalieble_files)) : ?>
         <p class="desc">
@@ -229,6 +221,21 @@ class Custom_Crop
                 'custom-crop' => array(__('Custom Crop'), 300, 200),
                 'custom-crop43' => array(__('Custom Crop 4:3'), 400, 300),
             ), $post_id);
+
+        foreach ($this->sizes as $size_id => $size ) {
+            if (isset($size['width']) && isset($size['width']) && isset($size['title'])) continue;
+            if (count($size) == 3) {
+                $this->sizes[$size_id] = array(
+                    'title' => $size[0],
+                    'width' => $size[1],
+                    'height' => $size[2]
+                );
+            }
+            else unset($this->sizes[$size_id]);
+
+        }
+
+
 
         return $this->sizes;
     }
@@ -257,12 +264,17 @@ class Custom_Crop
         check_admin_referer('custom_crop');
 
         $attachment_id = absint($_POST['attachment_id']);
+        $do = (!empty($_POST['do'])) ? sanitize_key($_POST['do']) : '';
+        $size = (!empty($_POST['size'])) ? sanitize_key($_POST['size']) : '';
 
-        $size = sanitize_key($_POST['size']);
+        switch ($do) {
+            case 'get_attachment':
+                $this->ajax_get_attachmets($attachment_id);
+                break;
+            case 'remove':
+                $this->ajax_remove($attachment_id, $size);
+                break;
 
-
-        if ($_POST['remove']) {
-            $this->ajax_remove($attachment_id, $size);
         }
 
         $size_meta = array(
@@ -309,9 +321,20 @@ class Custom_Crop
 
     }
 
+    public function ajax_get_attachmets($attachment_id) {
+        $meta = wp_get_attachment_metadata($attachment_id);
+        $upload_dir = wp_upload_dir();
+
+
+        $meta['file'] = $upload_dir['baseurl'] . '/' . $meta['file'];
+
+        wp_send_json($meta);
+
+    }
+
     public function ajax_remove($attachment_id, $size)
     {
-        $response = array();
+
         $meta = wp_get_attachment_metadata($attachment_id);
         $upload_dir = wp_upload_dir();
         $path_parts = pathinfo($meta['file']);
@@ -356,8 +379,8 @@ class Custom_Crop
 
         $this->get_sizes();
 
-        foreach ($this->sizes as $size => $size_opts) {
-            if (isset($oldmeta['sizes'][$size])) $metadata['sizes'][$size] = $oldmeta['sizes'][$size];
+        foreach ($this->sizes as $size_id => $size_opts) {
+            if (isset($oldmeta['sizes'][$size_id])) $metadata['sizes'][$size_id] = $oldmeta['sizes'][$size_id];
         }
 
         return $metadata;
@@ -365,8 +388,6 @@ class Custom_Crop
 
     public function crop($path, $width, $height, $img_width, $img_height, $x, $y)
     {
-
-
         //Create images resources
         $origin_image = imagecreatefromstring(file_get_contents($path));
 

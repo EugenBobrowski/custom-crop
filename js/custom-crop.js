@@ -1,7 +1,10 @@
 'use strict';
 
 (function ($) {
-    var $body, $window, $modal, $area, $img, $preview, size, Attachments = {}, attachment = {};
+    var $body, $window, $modal, $area, $img, $preview,
+        size,
+        Attachments = {},
+        attachment = {};
     $(document).ready(function () {
         $body = $('body');
         $window = $(window);
@@ -24,20 +27,19 @@
                 "click .center": "center",
                 "click .media-router>a": "change_size"
             },
-            initialize: function () {
-                this.listenTo(this.model, "change", this.render);
-            },
+            // initialize: function () {
+            //     // this.listenTo(this.model, "change", this.render);
+            // },
             attach: function () {
-                $img.data('h', $img.find('img').height())
-                    .data('w', $img.find('img').width())
-                    .addClass('responsive');
+
+
+            },
+            open: function () {
+                this.get_attachment();
                 this.resize_area();
                 this.slider_init();
                 this.zoom(1);
                 $img.draggable();
-
-            },
-            open: function () {
                 this.change_size();
             },
             resize_area: function (e) {
@@ -53,7 +55,6 @@
                         zoom: 1
                     },
                     margin = {};
-                //console.log(area);
 
                 if (size.w > area.max_w || size.h > area.max_h) {
                     area.ratio = area.max_w / area.max_h;
@@ -71,8 +72,6 @@
                 margin.x = (area.max_w - (size.w * area.zoom)) / 2;
                 margin.y = (area.max_h - (size.h * area.zoom)) / 2;
 
-                //console.log(area.max_h, size.h, area.zoom);
-
                 $area.css('padding', margin.y + 'px ' + margin.x + 'px');
                 $area.find('.margin.top').height(margin.y);
                 $area.find('.margin.bottom').height(margin.y);
@@ -87,8 +86,6 @@
                     h: size.h,
                     zoom: area.zoom
                 });
-                //console.log( $area.data());
-
 
                 this.preview({
                     size: size
@@ -112,7 +109,7 @@
                     $this = $modal.find('.media-router>a.active');
                 }
 
-                size = $this.data();
+                size = custom_crop_ajax.sizes[$this.data('')];
 
                 if (size.savedWidth !== undefined) $modal.find('.button.delete').fadeIn();
                 else $modal.find('.button.delete').fadeOut();
@@ -125,10 +122,8 @@
 
                 $modal.find('.origin-zoom').css('left', (1 / size.max_zoom * 100) + '%');
 
-                //console.log(size.max_zoom);
-
                 if (size.savedImg_width != undefined && size.savedImg_height != undefined) {
-                    zoom = size.savedImg_width / $img.data('w');
+                    zoom = size.savedImg_width / attachment.width;
                 }
 
                 this.slider_set_zoom(zoom);
@@ -175,7 +170,6 @@
                 $preview.find('img')
                     .width($img.outerWidth() / opt.size.w / $area.data('zoom') * 100 + '%')
                     .height($img.outerHeight() / opt.size.h / $area.data('zoom') * 100 + '%');
-                //console.log($img.outerWidth(), opt.size.w, $area.data('zoom'));
 
                 return this;
             },
@@ -206,8 +200,8 @@
                 });
             },
             zoom: function (zoom) {
-                $img.width($img.data('w') * zoom * $area.data('zoom'))
-                    .height($img.data('h') * zoom * $area.data('zoom'));
+                $img.width(attachment.width * zoom * $area.data('zoom'))
+                    .height(attachment.height * zoom * $area.data('zoom'));
                 this.preview();
             },
 
@@ -219,8 +213,8 @@
                         h: $area.data('h')
                     },
                     img = {
-                        w: $img.data('w'),
-                        h: $img.data('h')
+                        w: attachment.width,
+                        h: attachment.height
                     },
                     zoom;
 
@@ -243,7 +237,6 @@
             origin_zoom: function (e) {
                 this.zoom(1);
                 this.slider_set_zoom(1);
-
             },
             fit_in: function (e) {
 
@@ -266,7 +259,6 @@
 
                 var zoom = this.get_max_zoom(true);
 
-
                 this.zoom(zoom);
 
                 this.slider_set_zoom(zoom);
@@ -286,14 +278,32 @@
                     position: pos
                 });
             },
+            get_attachment: function () {
+
+                $.post(custom_crop_ajax.url, {
+                    action: custom_crop_ajax.action,
+                    do: 'get_attachment',
+                    _wpnonce: custom_crop_ajax._wpnonce,
+                    attachment_id: attachment.id
+
+                }, function (response) {
+
+                    $.extend(attachment, response);
+
+                    $img.find('img').attr('src', attachment.file);
+                    $preview.find('img').attr('src', attachment.file);
+
+
+                });
+            },
             delete: function (e) {
                 var $selected = $modal.find('.media-router>a.active');
                 $.post(custom_crop_ajax.url, {
                     action: custom_crop_ajax.action,
+                    do: 'remove',
                     _wpnonce: custom_crop_ajax._wpnonce,
-                    attachment_id: $img.data('attachment-id'),
-                    size: $selected.data('size'),
-                    remove: true
+                    attachment_id: attachment.id,
+                    size: $selected.data('size')
 
                 }, function (response) {
                     $selected
@@ -304,8 +314,6 @@
                         .removeAttr('saved-img_width')
                         .removeAttr('saved-img_height');
 
-                    //console.log($selected.data());
-
                     $selected
                         .removeData('saved-width')
                         .removeData('saved-height')
@@ -313,8 +321,6 @@
                         .removeData('saved-y')
                         .removeData('saved-img_width')
                         .removeData('saved-img_height');
-
-                    //console.log($selected.data());
 
                     $selected.find('img').attr('src', custom_crop_ajax.placeholder);
                     $modal.find('.button.delete').fadeOut();
@@ -333,7 +339,7 @@
                 var data = {
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
-                    attachment_id: $img.data('attachment-id'),
+                    attachment_id: attachment.id,
                     size: $selected.data('size'),
                     area_size: [$area.data('w'), $area.data('h')],
                     img_size: [$img.width() / area_zoom, $img.height() / area_zoom],
@@ -342,9 +348,6 @@
                 $spinner.addClass('is-active');
 
                 $.post(custom_crop_ajax.url, data, function (response) {
-                    // console.log(response, custom_crop_ajax, $img.data('attachment-id'));
-
-                    //console.log($selected.data());
                     $selected
                         .data('saved-width', $area.width() / area_zoom)
                         .data('saved-height', $area.height() / area_zoom)
@@ -379,32 +382,26 @@
         var ModalContentView = wp.Backbone.View.extend(cropViewObject);
 
         var modal = new wp.media.view.Modal({
-            // A controller object is expected, but let's just pass
-            // a fake one to illustrate this proof of concept without
-            // getting console errors.
             controller: {
                 trigger: function (e) {
-                    //console.log(e);
+                    console.log(e);
 
                     if (e == 'attach') {
-                        // $body.find( ".custom-crop-modal" ).find( ".slider" ).slider();
-
 
                         $window.resize(function (e) {
                             cropViewObject.resize_area(e);
                         });
+
                         $modal = $body.find(".custom-crop-modal");
                         $img = $modal.find('.cropped-img');
                         $area = $modal.find('.crop-area');
                         $preview = $modal.find('.preview');
+
                         cropViewObject.attach();
                     }
                     else if (e == 'open') {
 
                         cropViewObject.open();
-
-                        // $body.find( ".custom-crop-modal" ).find( ".slider" ).slider();
-
 
                     }
                 }
@@ -412,8 +409,7 @@
 
         });
 
-        // When the user clicks a button, open a modal.
-        $body.on('click', '.custom-crop-modal-open', function (event) {
+        $body.on('click', '.custom-crop-modal-open-link', function (event) {
             event.preventDefault();
             var $this = $(this);
             var id = $this.data('attachment-id');
@@ -426,13 +422,10 @@
 
             attachment = Attachments[id];
 
-            // Assign the ModalContentView to the modal as the `content` subview.
-            // Proxies to View.views.set( '.media-modal-content', content );
-            // modal.content(new ModalContentView());
-            if ($modal === undefined)
+            if ($modal === undefined) {
                 modal.content(new ModalContentView());
+            }
 
-            // Out of the box, the modal is closed, so we need to open() it.
             modal.open();
         });
 
