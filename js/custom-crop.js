@@ -3,6 +3,7 @@
 (function ($) {
     var $body, $window, $modal, $area, $img, $preview,
         size,
+        sizes,
         Attachments = {},
         attachment = {};
     $(document).ready(function () {
@@ -35,42 +36,41 @@
 
             },
             open: function () {
-                this.get_attachment();
-                this.resize_area();
-                this.slider_init();
-                this.zoom(1);
-                $img.draggable();
-                this.change_size();
+                var _ = this;
+                this.get_attachment(function () {
+                    _.change_size();
+                    _.resize_area();
+                    _.slider_init();
+                    _.zoom(1);
+                    $img.draggable();
+
+                });
+
             },
             resize_area: function (e) {
 
-                var $size = $modal.find('.media-router>a.active');
-                var size = {
-                        w: $size.data('width'),
-                        h: $size.data('height')
-                    },
-                    area = {
+                var area = {
                         max_w: $area.outerWidth(),
                         max_h: $area.outerHeight(),
                         zoom: 1
                     },
                     margin = {};
 
-                if (size.w > area.max_w || size.h > area.max_h) {
+                if (size.width > area.max_w || size.height > area.max_h) {
                     area.ratio = area.max_w / area.max_h;
-                    size.ratio = size.w / size.h;
+                    size.ratio = size.width / size.height;
 
                     if (size.ratio > area.ratio) {
                         //horizontal
                         area.zoom = area.max_w / size.w;
                     } else {
                         //vertical
-                        area.zoom = area.max_h / size.h;
+                        area.zoom = area.max_h / size.height;
                     }
                 }
 
-                margin.x = (area.max_w - (size.w * area.zoom)) / 2;
-                margin.y = (area.max_h - (size.h * area.zoom)) / 2;
+                margin.x = (area.max_w - (size.width * area.zoom)) / 2;
+                margin.y = (area.max_h - (size.height * area.zoom)) / 2;
 
                 $area.css('padding', margin.y + 'px ' + margin.x + 'px');
                 $area.find('.margin.top').height(margin.y);
@@ -82,8 +82,8 @@
                     .css('top', margin.y)
                     .css('bottom', margin.y);
                 $area.data({
-                    w: size.w,
-                    h: size.h,
+                    w: size.width,
+                    h: size.height,
                     zoom: area.zoom
                 });
 
@@ -109,12 +109,12 @@
                     $this = $modal.find('.media-router>a.active');
                 }
 
-                size = custom_crop_ajax.sizes[$this.data('')];
+                size = {id: $this.data('size-id')};
+                $.extend(size, custom_crop_ajax.sizes[size.id]);
 
-                if (size.savedWidth !== undefined) $modal.find('.button.delete').fadeIn();
-                else $modal.find('.button.delete').fadeOut();
 
                 this.resize_area();
+
                 var area_zoom = $area.data('zoom');
 
                 size.max_zoom = this.get_max_zoom(true);
@@ -122,9 +122,16 @@
 
                 $modal.find('.origin-zoom').css('left', (1 / size.max_zoom * 100) + '%');
 
-                if (size.savedImg_width != undefined && size.savedImg_height != undefined) {
-                    zoom = size.savedImg_width / attachment.width;
+                if (typeof attachment.sizes[size.id] !== 'undefined') {
+                    zoom = attachment.sizes[size.id].img_width / attachment.width;
+                    $modal.find('.button.delete').fadeIn();
+                    current_size.x = attachment.sizes[size.id].x * area_zoom;
+                    current_size.y = attachment.sizes[size.id].y * area_zoom;
+                } else {
+                    $modal.find('.button.delete').fadeOut();
                 }
+
+
 
                 this.slider_set_zoom(zoom);
                 this.zoom(zoom);
@@ -132,15 +139,15 @@
                 this.preview();
 
 
-                if (size.savedX != undefined && size.savedY != undefined) {
-                    current_size.x = size.savedX * area_zoom;
-                    current_size.y = size.savedY * area_zoom;
-                }
+                // if (size.savedX != undefined && size.savedY != undefined) {
+                //     current_size.x = size.savedX * area_zoom;
+                //     current_size.y = size.savedY * area_zoom;
+                // }
                 $img.css('left', current_size.x).css('top', current_size.y);
                 this.preview({
                     position: {
-                        left: size.savedX,
-                        top: size.savedY
+                        left: current_size.x,
+                        top: current_size.y
                     }
                 });
 
@@ -151,7 +158,7 @@
 
                 if (typeof opt.size == 'object') {
                     var w = $preview.width();
-                    $preview.height(w / opt.size.w * opt.size.h);
+                    $preview.height(w / opt.size.width * opt.size.height);
                 } else {
                     opt.size = {
                         w: $area.data('w'),
@@ -187,11 +194,9 @@
             },
             slide: function (e, ui) {
                 this.zoom(size.max_zoom * ui.value / 100);
-
                 this.preview()
             },
             drag: function (e, ui) {
-
                 this.preview({
                     position: {
                         top: ui.position.top / $area.data('zoom'),
@@ -206,8 +211,7 @@
             },
 
             get_max_zoom: function (cover) {
-                if (cover == undefined) cover = false;
-
+                if (cover === undefined) cover = false;
                 var area = {
                         w: $area.data('w'),
                         h: $area.data('h')
@@ -278,7 +282,7 @@
                     position: pos
                 });
             },
-            get_attachment: function () {
+            get_attachment: function (callback) {
 
                 $.post(custom_crop_ajax.url, {
                     action: custom_crop_ajax.action,
@@ -293,6 +297,20 @@
                     $img.find('img').attr('src', attachment.file);
                     $preview.find('img').attr('src', attachment.file);
 
+                    $modal.find('.media-router>a').each(
+                        function () {
+                            var $this = $(this);
+                            if (typeof attachment.sizes[$this.data('size-id')] !== 'undefined') {
+                                $this.find('.prev-icon').find('img')
+                                    .attr('src', attachment.sizes[$this.data('size-id')].file);
+                            } else {
+                                $this.find('.prev-icon').find('img')
+                                    .attr('src', custom_crop_ajax.placeholder);
+                            }
+                        }
+                    );
+
+                    callback.call();
 
                 });
             },
@@ -333,14 +351,13 @@
             },
             save: function (e, close) {
                 var _this = this;
-                var $selected = $modal.find('.media-router>a.active');
                 var area_zoom = $area.data('zoom');
                 var $spinner = $modal.find('.save-spinner');
                 var data = {
                     action: custom_crop_ajax.action,
                     _wpnonce: custom_crop_ajax._wpnonce,
                     attachment_id: attachment.id,
-                    size: $selected.data('size'),
+                    size: size.id,
                     area_size: [$area.data('w'), $area.data('h')],
                     img_size: [$img.width() / area_zoom, $img.height() / area_zoom],
                     position: [$img.data('left'), $img.data('top')]
@@ -348,21 +365,23 @@
                 $spinner.addClass('is-active');
 
                 $.post(custom_crop_ajax.url, data, function (response) {
-                    $selected
-                        .data('saved-width', $area.width() / area_zoom)
-                        .data('saved-height', $area.height() / area_zoom)
-                        .data('saved-x', $img.data('left'))
-                        .data('saved-y', $img.data('top'))
-                        .data('saved-img_width', $img.width() / area_zoom)
-                        .data('saved-img_height', $img.height() / area_zoom);
 
-                    $selected.find('img').attr('src', response.url + '?time=' + new Date().getTime());
+                    if (typeof response.meta !== 'object') {
+                        console.log('typeof response.meta !== \'object\'');
+                        return false;
+                    }
+
+                    attachment.sizes[size.id] = response.meta;
+
+                    console.log(Attachments);
+
+                    $modal.find('.media-router>a.active').find('img').attr('src', response.url + '?time=' + new Date().getTime());
 
                     $modal.find('.button.delete').fadeIn();
 
                     $spinner.removeClass('is-active');
 
-                    if (close != undefined && close == true) _this.close(e);
+                    if (close !== undefined && close === true) _this.close(e);
                 });
             },
             close: function (e) {

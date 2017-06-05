@@ -60,7 +60,8 @@ class Custom_Crop
         wp_enqueue_style('custom-crop', plugin_dir_url(__FILE__) . 'css/style.css', array(), CUSTOM_CROP_VERSION);
     }
 
-    public function modal() {
+    public function modal()
+    {
         $this->get_sizes();
         ?>
         <script type="text/template" id="tmpl-modal-content" class="hide-menu">
@@ -77,7 +78,7 @@ class Custom_Crop
                         foreach ($this->sizes as $size_id => $size_opts) {
                             ?>
                             <a href="#" class="media-menu-item <?php echo $active; ?>"
-                               data-size="<?php echo $size_id; ?>"
+                               data-size-id="<?php echo $size_id; ?>"
                             >
                                 <span class="prev-icon">
                                     <img src="<?php echo $placeholder; ?>" alt="">
@@ -187,7 +188,6 @@ class Custom_Crop
            id="modify_thumbnail"
            class="custom-crop-modal-open-link"
            data-attachment-id="<?php echo esc_attr($attachment_id); ?>"
-           data-metadata="<?php echo esc_attr(json_encode($metadata)); ?>"
         > <?php _e('Modify thumbnail'); ?></a>
 
         <?php
@@ -222,7 +222,7 @@ class Custom_Crop
                 'custom-crop43' => array(__('Custom Crop 4:3'), 400, 300),
             ), $post_id);
 
-        foreach ($this->sizes as $size_id => $size ) {
+        foreach ($this->sizes as $size_id => $size) {
             if (isset($size['width']) && isset($size['width']) && isset($size['title'])) continue;
             if (count($size) == 3) {
                 $this->sizes[$size_id] = array(
@@ -230,11 +230,9 @@ class Custom_Crop
                     'width' => $size[1],
                     'height' => $size[2]
                 );
-            }
-            else unset($this->sizes[$size_id]);
+            } else unset($this->sizes[$size_id]);
 
         }
-
 
 
         return $this->sizes;
@@ -274,59 +272,36 @@ class Custom_Crop
             case 'remove':
                 $this->ajax_remove($attachment_id, $size);
                 break;
-
+            default:
+                $this->ajax_crop($attachment_id, $size);
+                break;
         }
 
-        $size_meta = array(
-            'mime-type' => 'image/jpeg',
-        );
-
-        $size_meta['width'] = absint($_POST['area_size'][0]);
-        $size_meta['height'] = absint($_POST['area_size'][1]);
-
-        $size_meta['img_width'] = absint($_POST['img_size'][0]);
-        $size_meta['img_height'] = absint($_POST['img_size'][1]);
-
-        $size_meta['x'] = 0;
-        $size_meta['y'] = 0;
-
-        if (isset($_POST['position'])) {
-            $size_meta['x'] = intval($_POST['position'][0]);
-            $size_meta['y'] = intval($_POST['position'][1]);
-        }
-
-        $meta = wp_get_attachment_metadata($attachment_id);
-        $upload_dir = wp_upload_dir();
-        $path_parts = pathinfo($meta['file']);
-
-        $origin_path = $upload_dir['basedir'] . '/' . $meta['file'];
-        $size_meta['file'] = $path_parts['filename'] . '-' . $size . '.jpg';
-        $size_meta['timestamp'] = time();
-        $dst_path = $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
-        $dst_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
-
-
-        if (imagejpeg($this->crop($origin_path, $size_meta['width'], $size_meta['height'], $size_meta['img_width'], $size_meta['img_height'], $size_meta['x'], $size_meta['y']), $dst_path, 90))
-            $meta['sizes'][$size] = $size_meta;
-
-        wp_update_attachment_metadata($attachment_id, $meta);
-
-        do_action('update_cropshop_size', $size, $attachment_id);
-
-        wp_send_json(array(
-            'url' => $dst_url,
-            'meta' => $meta,
-        ));
+        exit();
 
 
     }
 
-    public function ajax_get_attachmets($attachment_id) {
+    public function ajax_get_attachmets($attachment_id)
+    {
         $meta = wp_get_attachment_metadata($attachment_id);
         $upload_dir = wp_upload_dir();
-
+        $path_parts = pathinfo($meta['file']);
+        $sizes_dir_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'];
 
         $meta['file'] = $upload_dir['baseurl'] . '/' . $meta['file'];
+
+
+        $this->get_sizes();
+        foreach ($meta['sizes'] as $size_id => $size) {
+            if (!isset($this->sizes[$size_id])) {
+                unset($meta['sizes'][$size_id]);
+                continue;
+            }
+
+            $meta['sizes'][$size_id]['file'] = $sizes_dir_url . '/' . $meta['sizes'][$size_id]['file'];
+
+        }
 
         wp_send_json($meta);
 
@@ -366,6 +341,52 @@ class Custom_Crop
             'meta' => $meta,
         ));
 
+    }
+
+    public function ajax_crop($attachment_id, $size)
+    {
+        $size_meta = array(
+            'mime-type' => 'image/jpeg',
+        );
+
+        $size_meta['width'] = absint($_POST['area_size'][0]);
+        $size_meta['height'] = absint($_POST['area_size'][1]);
+
+        $size_meta['img_width'] = absint($_POST['img_size'][0]);
+        $size_meta['img_height'] = absint($_POST['img_size'][1]);
+
+        $size_meta['x'] = 0;
+        $size_meta['y'] = 0;
+
+        if (isset($_POST['position'])) {
+            $size_meta['x'] = intval($_POST['position'][0]);
+            $size_meta['y'] = intval($_POST['position'][1]);
+        }
+
+        $meta = wp_get_attachment_metadata($attachment_id);
+        $upload_dir = wp_upload_dir();
+        $path_parts = pathinfo($meta['file']);
+
+        $origin_path = $upload_dir['basedir'] . '/' . $meta['file'];
+        $size_meta['file'] = $path_parts['filename'] . '-' . $size . '.jpg';
+        $size_meta['timestamp'] = time();
+        $dst_path = $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
+        $dst_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
+
+
+        if (imagejpeg($this->crop($origin_path, $size_meta['width'], $size_meta['height'], $size_meta['img_width'], $size_meta['img_height'], $size_meta['x'], $size_meta['y']), $dst_path, 90))
+            $meta['sizes'][$size] = $size_meta;
+
+        wp_update_attachment_metadata($attachment_id, $meta);
+
+        do_action('update_cropshop_size', $size, $attachment_id);
+
+        $size_meta['file'] = $dst_url;
+
+        wp_send_json(array(
+            'url' => $dst_url,
+            'meta' => $size_meta,
+        ));
     }
 
     public function save_cropped_sizes($metadata, $attachment_id)
