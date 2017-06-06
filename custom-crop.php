@@ -188,6 +188,8 @@ class Custom_Crop
            id="modify_thumbnail"
            class="custom-crop-modal-open-link"
            data-attachment-id="<?php echo esc_attr($attachment_id); ?>"
+           data-available="<?php echo esc_attr(json_encode(apply_filters('available_thumbnail_ccrop_sizes', array(), $post_id))); ?>"
+           data-disable="<?php echo esc_attr(json_encode(apply_filters('disable_thumbnail_ccrop_sizes', array(), $post_id))); ?>"
         > <?php _e('Modify thumbnail'); ?></a>
 
         <?php

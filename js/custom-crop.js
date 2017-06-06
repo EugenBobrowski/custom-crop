@@ -3,7 +3,7 @@
 (function ($) {
     var $body, $window, $modal, $area, $img, $preview,
         size,
-        sizes,
+        sizes = {},
         Attachments = {},
         attachment = {};
     $(document).ready(function () {
@@ -38,6 +38,7 @@
             open: function () {
                 var _ = this;
                 this.get_attachment(function () {
+                    _.allow_sizes();
                     _.change_size();
                     _.resize_area();
                     $img.draggable();
@@ -45,6 +46,7 @@
                 });
 
             },
+
             resize_area: function (e) {
 
                 var area = {
@@ -90,6 +92,34 @@
                 });
 
                 return this;
+            },
+            allow_sizes: function () {
+                var $sizes = $modal.find('.media-router>a');
+                var show_all = false;
+                if ( typeof sizes.available !== 'object') show_all = true;
+
+                $sizes.each(function () {
+                    var $this = $(this);
+                    var size_id = $this.data('size-id');
+
+                    if ( typeof size_id !== 'string' && !show_all) return true;
+
+                    if (!show_all && sizes.available.indexOf(size_id) < 0) {
+                        $this.hide();
+                    }
+                    else {
+                        $this.show();
+                    }
+
+                });
+
+                // if ($sizes.filter('.active'))
+                console.log($sizes.filter('a:visible'));
+                if($sizes.filter('a.active:visible').length === 0) {
+                    $sizes.removeClass('active');
+
+                    $sizes.filter(':visible').first().addClass('active');
+                }
             },
             change_size: function (e) {
                 var $this,
@@ -431,8 +461,12 @@
             event.preventDefault();
             var $this = $(this);
             var id = $this.data('attachment-id');
+            sizes.available = $this.data('available');
+            sizes.disable = $this.data('disable');
 
             if (undefined === id)  return false;
+
+            console.log(sizes);
 
             if (typeof Attachments[id] !== 'object') Attachments[id] = {
                 id: id
