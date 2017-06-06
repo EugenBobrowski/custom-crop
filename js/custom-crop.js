@@ -40,8 +40,6 @@
                 this.get_attachment(function () {
                     _.change_size();
                     _.resize_area();
-                    _.slider_init();
-                    _.zoom(1);
                     $img.draggable();
 
                 });
@@ -131,7 +129,7 @@
                     $modal.find('.button.delete').fadeOut();
                 }
 
-
+                console.log(zoom);
 
                 this.slider_set_zoom(zoom);
                 this.zoom(zoom);
@@ -188,6 +186,7 @@
 
             },
             slider_set_zoom: function (zoom) {
+                console.log(zoom / size.max_zoom * 100);
                 $modal.find(".slider").slider({
                     value: zoom / size.max_zoom * 100
                 });
