@@ -114,7 +114,6 @@
                 });
 
                 // if ($sizes.filter('.active'))
-                console.log($sizes.filter('a:visible'));
                 if($sizes.filter('a.active:visible').length === 0) {
                     $sizes.removeClass('active');
 
@@ -158,8 +157,6 @@
                 } else {
                     $modal.find('.button.delete').fadeOut();
                 }
-
-                console.log(zoom);
 
                 this.slider_set_zoom(zoom);
                 this.zoom(zoom);
@@ -216,7 +213,6 @@
 
             },
             slider_set_zoom: function (zoom) {
-                console.log(zoom / size.max_zoom * 100);
                 $modal.find(".slider").slider({
                     value: zoom / size.max_zoom * 100
                 });
@@ -396,13 +392,10 @@
                 $.post(custom_crop_ajax.url, data, function (response) {
 
                     if (typeof response.meta !== 'object') {
-                        console.log('typeof response.meta !== \'object\'');
                         return false;
                     }
 
                     attachment.sizes[size.id] = response.meta;
-
-                    console.log(Attachments);
 
                     $modal.find('.media-router>a.active').find('img').attr('src', response.url + '?time=' + new Date().getTime());
 
@@ -432,7 +425,6 @@
         var modal = new wp.media.view.Modal({
             controller: {
                 trigger: function (e) {
-                    console.log(e);
 
                     if (e == 'attach') {
 
@@ -465,8 +457,6 @@
             sizes.disable = $this.data('disable');
 
             if (undefined === id)  return false;
-
-            console.log(sizes);
 
             if (typeof Attachments[id] !== 'object') Attachments[id] = {
                 id: id
