@@ -5,10 +5,10 @@ Plugin Name: Custom  Crop
 Plugin URI: http://wordpress.org/plugins/antispam/
 Description: Custom Crop Plugin
 Author: MRKS
-Version: 1.0
+Version: 1.5
 */
 
-define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.1.7');
+define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.5');
 
 class Custom_Crop
 {
