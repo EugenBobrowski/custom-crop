@@ -397,7 +397,8 @@
 
                     attachment.sizes[size.id] = response.meta;
 
-                    $modal.find('.media-router>a.active').find('img').attr('src', response.url + '?time=' + new Date().getTime());
+                    // $modal.find('.media-router>a.active').find('img').attr('src', response.url + '?time=' + new Date().getTime());
+                    $modal.find('.media-router>a.active').find('img').attr('src', response.url);
 
                     $modal.find('.button.delete').fadeIn();
 

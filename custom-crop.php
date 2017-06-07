@@ -302,7 +302,7 @@ class Custom_Crop
             }
 
             $meta['sizes'][$size_id]['file'] = $sizes_dir_url . '/' . $meta['sizes'][$size_id]['file'];
-
+            $meta['sizes'][$size_id]['file'] = add_query_arg(array('t' => $meta['sizes'][$size_id]['timestamp']), $meta['sizes'][$size_id]['file']);
         }
 
         wp_send_json($meta);
@@ -374,7 +374,7 @@ class Custom_Crop
         $size_meta['timestamp'] = time();
         $dst_path = $upload_dir['basedir'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
         $dst_url = $upload_dir['baseurl'] . '/' . $path_parts['dirname'] . '/' . $size_meta['file'];
-
+        $dst_url = add_query_arg(array('t' => $size_meta['timestamp']), $dst_url);
 
         if (imagejpeg($this->crop($origin_path, $size_meta['width'], $size_meta['height'], $size_meta['img_width'], $size_meta['img_height'], $size_meta['x'], $size_meta['y']), $dst_path, 90))
             $meta['sizes'][$size] = $size_meta;
