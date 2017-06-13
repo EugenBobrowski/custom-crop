@@ -346,31 +346,15 @@
                     do: 'remove',
                     _wpnonce: custom_crop_ajax._wpnonce,
                     attachment_id: attachment.id,
-                    size: $selected.data('size')
+                    size: size.id
 
                 }, function (response) {
-                    $selected
-                        .removeAttr('saved-width')
-                        .removeAttr('saved-height')
-                        .removeAttr('saved-x')
-                        .removeAttr('saved-y')
-                        .removeAttr('saved-img_width')
-                        .removeAttr('saved-img_height');
-
-                    $selected
-                        .removeData('saved-width')
-                        .removeData('saved-height')
-                        .removeData('saved-x')
-                        .removeData('saved-y')
-                        .removeData('saved-img_width')
-                        .removeData('saved-img_height');
-
                     $selected.find('img').attr('src', custom_crop_ajax.placeholder);
                     $modal.find('.button.delete').fadeOut();
                     if (response.file_deleted) {
 
                     }
-
+                    if (typeof (sizes.$target.data('single-size')) !== 'undefined') sizes.$target.removeClass('cropped');
 
                 });
             },
@@ -408,6 +392,8 @@
                     $spinner.removeClass('is-active');
 
                     if (close !== undefined && close === true) _this.close(e);
+
+                    if (typeof (sizes.$target.data('single-size')) !== 'undefined') sizes.$target.addClass('cropped');
                 });
             },
             close: function (e) {
@@ -460,6 +446,7 @@
             sizes.available = $this.data('available');
             sizes.disable = $this.data('disable');
             sizes.additional = $this.data('additional');
+            sizes.$target = $this;
 
 
             if (undefined === id)  return false;
