@@ -62,7 +62,7 @@
 
                     if (size.ratio > area.ratio) {
                         //horizontal
-                        area.zoom = area.max_w / size.w;
+                        area.zoom = area.max_w / size.width;
                     } else {
                         //vertical
                         area.zoom = area.max_h / size.height;
@@ -86,6 +86,8 @@
                     h: size.height,
                     zoom: area.zoom
                 });
+
+                console.log(area.zoom);
 
                 this.preview({
                     size: size
@@ -385,11 +387,14 @@
                     size: size.id,
                     area_size: [$area.data('w'), $area.data('h')],
                     img_size: [$img.width() / area_zoom, $img.height() / area_zoom],
-                    position: [$img.data('left'), $img.data('top')]
+                    position: [$img.data('left'), $img.data('top')],
+                    additional: sizes.additional
                 };
                 $spinner.addClass('is-active');
 
                 $.post(custom_crop_ajax.url, data, function (response) {
+
+                    console.log($area.data());
 
                     if (typeof response.meta !== 'object') {
                         return false;
@@ -456,6 +461,8 @@
             var id = $this.data('attachment-id');
             sizes.available = $this.data('available');
             sizes.disable = $this.data('disable');
+            sizes.additional = $this.data('additional');
+
 
             if (undefined === id)  return false;
 

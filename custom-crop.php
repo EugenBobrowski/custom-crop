@@ -263,9 +263,13 @@ class Custom_Crop
     {
         check_admin_referer('custom_crop');
 
+//        var_dump($_POST);
+//        exit();
+
         $attachment_id = absint($_POST['attachment_id']);
         $do = (!empty($_POST['do'])) ? sanitize_key($_POST['do']) : '';
         $size = (!empty($_POST['size'])) ? sanitize_key($_POST['size']) : '';
+        $additional = (!empty($_POST['additional'])) ? $_POST['additional'] : array();
 
         switch ($do) {
             case 'get_attachment':
@@ -275,7 +279,7 @@ class Custom_Crop
                 $this->ajax_remove($attachment_id, $size);
                 break;
             default:
-                $this->ajax_crop($attachment_id, $size);
+                $this->ajax_crop($attachment_id, $size, $additional);
                 break;
         }
 
@@ -345,7 +349,7 @@ class Custom_Crop
 
     }
 
-    public function ajax_crop($attachment_id, $size)
+    public function ajax_crop($attachment_id, $size, $additional = array())
     {
         $size_meta = array(
             'mime-type' => 'image/jpeg',
@@ -381,7 +385,7 @@ class Custom_Crop
 
         wp_update_attachment_metadata($attachment_id, $meta);
 
-        do_action('update_cropshop_size', $size, $attachment_id);
+        do_action('update_cropshop_size', $size, $attachment_id, $additional);
 
         $size_meta['file'] = $dst_url;
 
