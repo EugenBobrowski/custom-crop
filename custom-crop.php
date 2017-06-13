@@ -275,6 +275,9 @@ class Custom_Crop
             case 'get_attachment':
                 $this->ajax_get_attachmets($attachment_id);
                 break;
+            case 'check_crops':
+                $this->ajax_check_crops();
+                break;
             case 'remove':
                 $this->ajax_remove($attachment_id, $size);
                 break;
@@ -310,6 +313,25 @@ class Custom_Crop
         }
 
         wp_send_json($meta);
+
+    }
+
+    public function ajax_check_crops()
+    {
+        if (!isset($_POST['check_crops']) || !is_array($_POST['check_crops']));
+
+
+
+        $is_cropped = $_POST['check_crops'];
+
+        foreach ($is_cropped as $key => $link) {
+            $meta = wp_get_attachment_metadata($link['attachment_id']);
+            $is_cropped[$key]['cropped'] = isset($meta['sizes'][$link['size']]);
+        }
+
+        $is_cropped = array_values($is_cropped);
+
+        wp_send_json($is_cropped);
 
     }
 

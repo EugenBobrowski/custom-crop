@@ -87,8 +87,6 @@
                     zoom: area.zoom
                 });
 
-                console.log(area.zoom);
-
                 this.preview({
                     size: size
                 });
@@ -98,13 +96,13 @@
             allow_sizes: function () {
                 var $sizes = $modal.find('.media-router>a');
                 var show_all = false;
-                if ( typeof sizes.available !== 'object') show_all = true;
+                if (typeof sizes.available !== 'object') show_all = true;
 
                 $sizes.each(function () {
                     var $this = $(this);
                     var size_id = $this.data('size-id');
 
-                    if ( typeof size_id !== 'string' && !show_all) return true;
+                    if (typeof size_id !== 'string' && !show_all) return true;
 
                     if (!show_all && sizes.available.indexOf(size_id) < 0) {
                         $this.hide();
@@ -116,7 +114,7 @@
                 });
 
                 // if ($sizes.filter('.active'))
-                if($sizes.filter('a.active:visible').length === 0) {
+                if ($sizes.filter('a.active:visible').length === 0) {
                     $sizes.removeClass('active');
 
                     $sizes.filter(':visible').first().addClass('active');
@@ -478,6 +476,39 @@
 
             modal.open();
         });
+
+        (function () {
+            var is_cropped = [];
+            var $links = $body.find('.custom-crop-modal-open-link');
+            $links.each(function () {
+                var $this = $(this);
+                var single = $this.data('single-size');
+                if (typeof single !== 'undefined') is_cropped.push({
+                    attachment_id: $this.data('attachment-id'),
+                    size: single
+                });
+            });
+
+            var data = {
+                action: custom_crop_ajax.action,
+                _wpnonce: custom_crop_ajax._wpnonce,
+                do: 'check_crops',
+                check_crops: is_cropped
+            };
+            $links.addClass('checking-crops');
+
+            $.post(custom_crop_ajax.url, data, function (response) {
+                response.forEach(function (item) {
+                    var selector = '[data-attachment-id=' + item.attachment_id + '][data-single-size="'+item.size+'"]';
+                    if (item.cropped) $links.filter(selector).addClass('cropped');
+                    else $links.filter(selector).removeClass('cropped');
+                });
+                $links.removeClass('checking-crops');
+
+
+            });
+
+        })();
 
 
     });
