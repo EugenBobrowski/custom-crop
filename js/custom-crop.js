@@ -346,7 +346,8 @@
                     do: 'remove',
                     _wpnonce: custom_crop_ajax._wpnonce,
                     attachment_id: attachment.id,
-                    size: size.id
+                    size: size.id,
+                    additional: sizes.additional
 
                 }, function (response) {
                     $selected.find('img').attr('src', custom_crop_ajax.placeholder);
@@ -375,8 +376,6 @@
                 $spinner.addClass('is-active');
 
                 $.post(custom_crop_ajax.url, data, function (response) {
-
-                    console.log($area.data());
 
                     if (typeof response.meta !== 'object') {
                         return false;

@@ -8,7 +8,7 @@ Author: MRKS
 Version: 1.5
 */
 
-define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.6');
+define('CUSTOM_CROP_VERSION', (WP_DEBUG) ? time() : '1.6.1');
 
 class Custom_Crop
 {
@@ -263,9 +263,6 @@ class Custom_Crop
     {
         check_admin_referer('custom_crop');
 
-//        var_dump($_POST);
-//        exit();
-
         $attachment_id = absint($_POST['attachment_id']);
         $do = (!empty($_POST['do'])) ? sanitize_key($_POST['do']) : '';
         $size = (!empty($_POST['size'])) ? sanitize_key($_POST['size']) : '';
@@ -279,7 +276,7 @@ class Custom_Crop
                 $this->ajax_check_crops();
                 break;
             case 'remove':
-                $this->ajax_remove($attachment_id, $size);
+                $this->ajax_remove($attachment_id, $size, $additional);
                 break;
             default:
                 $this->ajax_crop($attachment_id, $size, $additional);
@@ -335,7 +332,7 @@ class Custom_Crop
 
     }
 
-    public function ajax_remove($attachment_id, $size)
+    public function ajax_remove($attachment_id, $size,  $additional = array())
     {
 
         $meta = wp_get_attachment_metadata($attachment_id);
@@ -361,6 +358,8 @@ class Custom_Crop
 
         unset($meta['sizes'][$size]);
         wp_update_attachment_metadata($attachment_id, $meta);
+
+        do_action('remove_cropshop_size', $size, $attachment_id, $additional);
 
         wp_send_json(array(
             'file_existed' => $file_existed,
