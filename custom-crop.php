@@ -317,9 +317,7 @@ class Custom_Crop
     {
         if (!isset($_POST['check_crops']) || !is_array($_POST['check_crops']));
 
-
-
-        $is_cropped = $_POST['check_crops'];
+        $is_cropped = (is_array($_POST['check_crops'])) ? $_POST['check_crops'] : array();
 
         foreach ($is_cropped as $key => $link) {
             $meta = wp_get_attachment_metadata($link['attachment_id']);
