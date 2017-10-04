@@ -475,6 +475,8 @@
                 });
             });
 
+            if (!is_cropped.length) return false;
+
             var data = {
                 action: custom_crop_ajax.action,
                 _wpnonce: custom_crop_ajax._wpnonce,
