@@ -6,7 +6,7 @@
 add_filter('custom_crop_sizes', 'current_site_crop_sizes');
 
 function current_site_crop_sizes ($sizes) {
-    $sizes = array_merge($size, array(
+    $sizes = array_merge($sizes, array(
         'custom600x400' => array(__('Review Thumb 600x400'), 600, 400),
         'example' => array(__('Example'), 200, 150),
     ));
