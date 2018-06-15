@@ -220,8 +220,8 @@ class Custom_Crop
 
         if (empty($this->sizes))
             $this->sizes = apply_filters('custom_crop_sizes', array(
-                'custom-crop' => array(__('Custom Crop'), 300, 200),
-                'custom-crop43' => array(__('Custom Crop 4:3'), 400, 300),
+//                'custom-crop' => array(__('Custom Crop'), 300, 200),
+//                'custom-crop43' => array(__('Custom Crop 4:3'), 400, 300),
             ), $post_id);
 
         foreach ($this->sizes as $size_id => $size) {
